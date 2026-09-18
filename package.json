@@ -5,10 +5,13 @@
   "scripts": {
     "ng": "nx",
     "postinstall": "node ./decorate-angular-cli.js && ngcc --properties es2015 browser module main",
-    "start": "nx serve",
+    "start": "nx serve dc-catalog",
     "build": "nx build",
     "test": "nx test",
-    "mock-api": "json-server --watch db.json --port 3000"
+    "mock-api": "json-server --watch db.json --port 3000",
+    "setup": "npm install && node tools/seed-db.js",
+    "seed": "node tools/seed-db.js",
+    "seed:reset": "node tools/seed-db.js --force"
   },
   "private": true,
   "dependencies": {
