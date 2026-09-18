@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="mb-8 rounded-lg bg-slate-800 p-4">
+<div class="flex-row gap-3 mb-3">
+    <label class="block text-sm text-slate-300">Name</label>
+    <div class="flex gap-3">
+        <input formControlName="name" class="rounded bg-slate-700 px-2 py-1 text-white" />
+        <span *ngIf="form.controls.name.errors?.required" class="text-red-600">Name is required.</span>
+        <span *ngIf="form.controls.name.errors?.minlength" class="text-red-600">At least 2 characters.</span>
+    </div>
+    <label class="block text-sm text-slate-300">Full name</label>
+    <input formControlName="fullName" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    <label class="block text-sm text-slate-300">Alignment</label>
+    <select formControlName="alignment" class="rounded bg-slate-700 px-2 py-1 text-white">
+    <option value="good">good</option>
+    <option value="bad">bad</option>
+    <option value="neutral">neutral</option>
+    </select>
+    <label class="block text-sm text-slate-300">Image Url</label>
+    <input formControlName="imageUrl" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    <div formGroupName="powerstats" class="flex gap-3">
+    <div>
+        <label class="block text-sm text-slate-300">Intelligence</label>
+        <input type="number" formControlName="intelligence" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    <div>
+        <label class="block text-sm text-slate-300">Strength</label>
+        <input type="number" formControlName="strength" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    <div>
+        <label class="block text-sm text-slate-300">Speed</label>
+        <input type="number" formControlName="speed" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    <div>
+        <label class="block text-sm text-slate-300">Durability</label>
+        <input type="number" formControlName="durability" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    <div>
+        <label class="block text-sm text-slate-300">Power</label>
+        <input type="number" formControlName="power" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    <div>
+        <label class="block text-sm text-slate-300">Combat</label>
+        <input type="number" formControlName="combat" class="rounded bg-slate-700 px-2 py-1 text-white" />
+    </div>
+    </div>
+</div>
+<button type="submit" [disabled]="form.invalid"
+        class="rounded bg-sky-600 px-3 py-1 text-white disabled:opacity-40">
+  {{submitLabel}}
+</button>

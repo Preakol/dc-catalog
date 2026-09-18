@@ -1,0 +1,7 @@
+<ng-container *ngIf="hero$ | async as hero; else notFound">
+  <dc-hero-form [hero]="hero" submitLabel="Save changes"
+                (submitted)="onSubmit(hero, $event)"></dc-hero-form>
+</ng-container>
+<ng-template #notFound>
+  <p class="text-slate-400">Hero not found.</p>
+</ng-template>

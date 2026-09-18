@@ -1,0 +1,17 @@
+<article class="rounded-lg bg-slate-800 p-3">
+  <img [src]="hero.images.md" [alt]="hero.name" class="w-full rounded" />
+  <h3 class="mt-2 font-bold text-sky-400">{{ hero.name }}</h3>
+  <p class="mt-2 text-sky-400" *ngIf="fullName !== ''">Full real name: {{ fullName }}</p>
+  <p class="mt-2 text-sky-400">Race: {{race}}</p>
+  <div *ngFor="let stat of stats" class="mt-1 flex items-center gap-2">
+    <span class="w-8 text-xs text-slate-400">{{ stat.label }}</span>
+    <div class="h-1.5 flex-1 rounded bg-slate-700">
+        <div class="h-full rounded bg-sky-500" [style.width.%]="stat.value"></div>
+    </div>
+  </div>
+  <button (click)="onDeleteClick()"
+        class="mt-2 rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700">
+    Delete
+  </button>
+  <a [routerLink]="['/heroes', hero.id, 'edit']" class="mt-2 ml-2 rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-red-700">Edit</a>
+</article>

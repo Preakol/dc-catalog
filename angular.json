@@ -5,11 +5,13 @@
       "projectType": "application",
       "root": "apps/dc-catalog",
       "sourceRoot": "apps/dc-catalog/src",
-      "prefix": "ridango-lab",
+      "prefix": "dc",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/apps/dc-catalog",
             "index": "apps/dc-catalog/src/index.html",
@@ -20,7 +22,9 @@
               "apps/dc-catalog/src/favicon.ico",
               "apps/dc-catalog/src/assets"
             ],
-            "styles": ["apps/dc-catalog/src/styles.css"],
+            "styles": [
+              "apps/dc-catalog/src/styles.css"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -85,7 +89,9 @@
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/dc-catalog"],
+          "outputs": [
+            "coverage/apps/dc-catalog"
+          ],
           "options": {
             "jestConfig": "apps/dc-catalog/jest.config.js",
             "passWithNoTests": true
@@ -113,9 +119,13 @@
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["apps/dc-catalog-e2e/**/*.{js,ts}"]
+            "lintFilePatterns": [
+              "apps/dc-catalog-e2e/**/*.{js,ts}"
+            ]
           }
         }
       }

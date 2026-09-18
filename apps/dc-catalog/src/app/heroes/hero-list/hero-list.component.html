@@ -1,0 +1,32 @@
+<input type="search" [formControl]="search" placeholder="Search hero" class="mb-6">
+<div class="flex gap-x-3 mb-6 px-3 bg-sky-500 max-w-fit">
+    <button *ngFor="let a of alignmentFilters" (click)="alignment.setValue(a)" [class.bg-cyan-600]="alignment.value === a" class="text-white">
+        {{ a }}
+    </button>
+</div>
+<dc-hero-form (submitted)="onHeroSubmitted($event)" submitLabel="Create hero"></dc-hero-form>
+<ng-container [ngSwitch]="status$ | async">
+    <p *ngSwitchCase="'loading'">Loading heroes…</p>
+    <div *ngSwitchCase="'error'">
+        <p class="text-red-600">Error: {{error$ | async}}</p>
+        <button (click)="onClickRetry()"
+        class="mt-2 rounded bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700">
+        Retry heroes load
+        </button>
+    </div>
+    <div *ngSwitchCase="'loaded'">
+        <ng-container *ngIf="heroes$ | async as heroes">
+        <p class="mb-4 text-sm text-slate-400">
+            {{ heroes.length }} heroes
+        </p>
+        <p *ngIf="heroes.length === 0" class="mb-4 text-sm text-slate-400">No heroes match your search</p>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <dc-hero-card
+            *ngFor="let hero of heroes; trackBy: trackById"
+            [hero]="hero"
+            (deleted)="onHeroDeleted($event)">
+            </dc-hero-card>
+        </div>
+        </ng-container>
+    </div>
+</ng-container>
