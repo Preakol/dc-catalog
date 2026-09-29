@@ -1,24 +1,50 @@
-import { Component, EventEmitter, Input, Output,  } from '@angular/core';
-import { Hero, StatEntry, toStatEntries, raceOf, fullNameOf} from '../hero.model';
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+
+import { Hero, StatEntry } from '../hero.model';
+import {
+  PLACEHOLDER_IMAGE,
+  fullNameOf,
+  hasFullName,
+  raceOf,
+  toAlignment,
+  toStatEntries,
+} from '../hero.utils';
+
+/**
+ * Computed here rather than in the template: Angular rejects a slash inside
+ * [class.bg-emerald-500/20], which is exactly how Tailwind spells opacity.
+ */
+const ALIGNMENT_BADGE: Record<string, string> = {
+  good: 'bg-emerald-500/20 text-emerald-300 ring-emerald-500/40',
+  bad: 'bg-rose-500/20 text-rose-300 ring-rose-500/40',
+  neutral: 'bg-slate-500/20 text-slate-300 ring-slate-500/40',
+};
 
 @Component({
   selector: 'dc-hero-card',
   templateUrl: './hero-card.component.html',
-  styleUrls: ['./hero-card.component.css']
 })
-
-export class HeroCardComponent {
+export class HeroCardComponent implements OnChanges {
   @Input() hero!: Hero;
-  @Output() deleted = new EventEmitter<number>()
 
-  get race(): string {
-    return raceOf(this.hero)
-  }
-  get fullName(): string {
-    return fullNameOf(this.hero)
-  }
-  get stats(): StatEntry[] {
-    return toStatEntries(this.hero.powerstats)
+  @Output() deleted = new EventEmitter<number>();
+
+  stats: StatEntry[] = [];
+  imageUrl = PLACEHOLDER_IMAGE;
+  race = '';
+  fullName = '';
+  showFullName = false;
+  alignment = '';
+  alignmentClass = '';
+
+  ngOnChanges(): void {
+    this.stats = toStatEntries(this.hero.powerstats);
+    this.imageUrl = this.hero.images?.md || PLACEHOLDER_IMAGE;
+    this.race = raceOf(this.hero);
+    this.fullName = fullNameOf(this.hero);
+    this.showFullName = hasFullName(this.hero);
+    this.alignment = toAlignment(this.hero.biography?.alignment);
+    this.alignmentClass = ALIGNMENT_BADGE[this.alignment];
   }
 
   onDeleteClick(): void {

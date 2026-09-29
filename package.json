@@ -9,9 +9,13 @@
     "build": "nx build",
     "test": "nx test",
     "mock-api": "json-server --watch db.json --port 3000",
-    "setup": "npm install && node tools/seed-db.js",
+    "setup": "npm install && node tools/set-env.js && node tools/seed-db.js",
     "seed": "node tools/seed-db.js",
-    "seed:reset": "node tools/seed-db.js --force"
+    "seed:reset": "node tools/seed-db.js --force",
+    "env": "node tools/set-env.js",
+    "prestart": "node tools/set-env.js",
+    "prebuild": "node tools/set-env.js",
+    "mock-api:slow": "json-server --watch db.json --port 3000 --delay 1200"
   },
   "private": true,
   "dependencies": {

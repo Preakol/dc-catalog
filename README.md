@@ -29,11 +29,29 @@ nvm use          # reads .nvmrc
 
 ## Setup
 
-One command — installs dependencies and creates `db.json`:
+One command — installs dependencies, generates `environment.ts` from `.env`,
+and creates `db.json`:
 
 ```bash
+cp .env.example .env    # optional: defaults work without it
 npm run setup
 ```
+
+### Environment variables
+
+Angular has no built-in `.env` support: the build is static and there is no
+`process.env` in the browser. So `tools/set-env.js` reads `.env` and generates
+`src/environments/environment.ts` before every `start` and `build`
+(via npm `prestart` / `prebuild` hooks).
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `API_URL` | `http://localhost:3000` | the local json-server (all CRUD) |
+| `HEROES_API_URL` | `https://akabab.github.io/superhero-api/api` | the free external API (read-only) |
+
+`.env` and the generated `environment*.ts` are gitignored; `.env.example` is
+committed. **Anything placed here ends up in the JavaScript bundle and is
+visible to any user — never put secrets in a frontend `.env`.**
 
 `db.json` is the database for the mock API. It is seeded from the free
 [akabab superhero API](https://akabab.github.io/superhero-api/), filtered to the
@@ -50,6 +68,13 @@ Two terminals, both from the project root.
 npm run mock-api
 ```
 
+To actually see the loading spinner and skeletons, start it with an artificial
+delay instead — the local API is otherwise too fast for the state to be visible:
+
+```bash
+npm run mock-api:slow    # 1200 ms delay on every response
+```
+
 **Terminal 2 — the app** (http://localhost:4200):
 
 ```bash
@@ -63,9 +88,11 @@ error state and a retry button.
 
 | Command | Does |
 | --- | --- |
-| `npm run setup` | Install dependencies and create `db.json` if missing |
+| `npm run setup` | Install dependencies, generate env, create `db.json` if missing |
+| `npm run env` | Regenerate `environment.ts` from `.env` |
 | `npm start` | Dev server on http://localhost:4200 |
 | `npm run mock-api` | json-server on http://localhost:3000 |
+| `npm run mock-api:slow` | same, with a 1200 ms delay — makes the loading state visible |
 | `npm run seed:reset` | Overwrite `db.json` with fresh data (discards local changes) |
 | `npm run build` | Production build into `dist/` |
 | `npx nx lint dc-catalog` | Lint |
@@ -76,6 +103,7 @@ they survive a restart. Use `npm run seed:reset` to get back to a clean dataset.
 
 ## Features
 
+- A random hero pulled from the external API on every page load, importable into the catalog with one click
 - List heroes with live search (debounced) and filtering by alignment
 - Create a hero via a validated reactive form
 - Edit a hero at `/heroes/:id/edit`, sharing the same form component

@@ -98,37 +98,6 @@
           }
         }
       }
-    },
-    "dc-catalog-e2e": {
-      "root": "apps/dc-catalog-e2e",
-      "sourceRoot": "apps/dc-catalog-e2e/src",
-      "projectType": "application",
-      "architect": {
-        "e2e": {
-          "builder": "@nrwl/cypress:cypress",
-          "options": {
-            "cypressConfig": "apps/dc-catalog-e2e/cypress.json",
-            "devServerTarget": "dc-catalog:serve:development",
-            "tsConfig": "apps/dc-catalog-e2e/tsconfig.json"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "dc-catalog:serve:production"
-            }
-          }
-        },
-        "lint": {
-          "builder": "@nrwl/linter:eslint",
-          "outputs": [
-            "{options.outputFile}"
-          ],
-          "options": {
-            "lintFilePatterns": [
-              "apps/dc-catalog-e2e/**/*.{js,ts}"
-            ]
-          }
-        }
-      }
     }
   },
   "cli": {

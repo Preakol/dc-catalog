@@ -1,61 +1,61 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Hero, HeroFormValue, buildNewHero } from './hero.model';
+import { BehaviorSubject, Observable, Subject, defer, of } from 'rxjs';
+import { catchError, finalize, map, retry, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 
-const ALL_HEROES_URL =
-  'http://localhost:3000/heroes';
+import { environment } from '../../environments/environment';
+import { Hero, HeroFormValue } from './hero.model';
+import { HeroesState, HeroesStatus, initialState } from './hero.state';
+import { buildNewHero } from './hero.mapper';
 
-export type HeroesStatus = 'idle' | 'loading' | 'loaded' | 'error';
+const HEROES_URL = `${environment.apiUrl}/heroes`;
 
-export interface HeroesState {
-  heroes: Hero[];
-  status: HeroesStatus;
-  error: string | null;
+const EXTERNAL_API = environment.heroesApiUrl;
+
+const EXTERNAL_MAX_ID = 731;
+const EXTERNAL_DRAWS = 5;
+
+function randomExternalId(): number {
+  return 1 + Math.floor(Math.random() * EXTERNAL_MAX_ID);
 }
-
-const initialState: HeroesState = { heroes:[], status:'idle', error:null };
 
 @Injectable({ providedIn: 'root' })
 export class HeroService {
   private readonly state$ = new BehaviorSubject<HeroesState>(initialState);
 
   readonly heroes$: Observable<Hero[]> = this.state$.pipe(map((s) => s.heroes));
-  readonly status$: Observable<HeroesStatus> = this.state$.pipe(map((s) => s.status))
-  readonly error$:  Observable<string | null> = this.state$.pipe(map((s) => s.error))
+  readonly status$: Observable<HeroesStatus> = this.state$.pipe(map((s) => s.status));
+  readonly error$: Observable<string | null> = this.state$.pipe(map((s) => s.error));
+  readonly importing$: Observable<boolean> = this.state$.pipe(map((s) => s.importing));
+  readonly discovering$: Observable<boolean> = this.state$.pipe(map((s) => s.discovering));
+
+  private readonly discoverAgain$ = new Subject<void>();
+
+  readonly discovered$: Observable<Hero | null> = this.discoverAgain$.pipe(
+    startWith(undefined),
+    tap(() => this.patch({ discovering: true })),
+    switchMap(() =>
+      defer(() =>
+        this.http.get<Hero>(`${EXTERNAL_API}/id/${randomExternalId()}.json`)
+      ).pipe(
+        retry(EXTERNAL_DRAWS),
+        catchError(() => of(null)),
+        finalize(() => this.patch({ discovering: false }))
+      )
+    ),
+    shareReplay({ bufferSize: 1, refCount: false })
+  );
 
   constructor(private http: HttpClient) {}
-
-  private patch(changes: Partial<HeroesState>): void {
-    this.state$.next({ ...this.state$.value, ...changes });
-  }
 
   load(): void {
     this.patch({ status: 'loading', error: null });
 
-    this.http.get<Hero[]>(ALL_HEROES_URL).subscribe({
-      next: (heroes) => this.patch({ heroes:heroes, status:'loaded' }),
-      error: () => this.patch({ status:'error', error:'Request Failed' }),
-    });
-  }
-
-  remove(id: number): void {
-    this.http.delete<void>(`${ALL_HEROES_URL}/${id}`).subscribe({
-      next: () => this.patch({ heroes: this.state$.value.heroes.filter(h => h.id !== id) }),
-      error: () => this.patch({ error: 'Could not delete hero.' }),
-    });
-  }
-
-  create(input: HeroFormValue): void {
-    this.http.post<Hero>(ALL_HEROES_URL, buildNewHero(input)).subscribe({
-      next: (created) => this.patch({ heroes: [...this.state$.value.heroes, created] }),
-      error: () => this.patch({ error: 'Could not create hero.' }),
-    });
-  }
-
-  getHero(id: number): Observable<Hero | undefined> {
-    return this.heroes$.pipe(map((heroes) => heroes.find((h) => h.id === id)));
+    this.request(
+      this.http.get<Hero[]>(HEROES_URL),
+      (heroes) => ({ heroes, status: 'loaded' }),
+      { status: 'error', error: 'Could not load heroes.' }
+    );
   }
 
   ensureLoaded(): void {
@@ -64,10 +64,74 @@ export class HeroService {
     }
   }
 
+  create(input: HeroFormValue): void {
+    this.request(
+      this.http.post<Hero>(HEROES_URL, buildNewHero(input)),
+      (created) => ({ heroes: [...this.currentHeroes, created] }),
+      { error: 'Could not create hero.' }
+    );
+  }
+
+  importHero(hero: Hero): void {
+    const { id, ...withoutId } = hero;
+
+    this.patch({ importing: true });
+
+    this.request(
+      this.http.post<Hero>(HEROES_URL, withoutId),
+      (created) => ({ heroes: [...this.currentHeroes, created], importing: false }),
+      { error: 'Could not import hero.', importing: false }
+    );
+  }
+
   update(id: number, updated: Hero): void {
-    this.http.put<Hero>(`${ALL_HEROES_URL}/${id}`, updated).subscribe({
-      next: (saved) => this.patch({ heroes: this.state$.value.heroes.map( h => h.id === saved.id ? saved : h) }),
-      error: () => this.patch({ error: 'Could not update hero.' }),
+    this.request(
+      this.http.put<Hero>(`${HEROES_URL}/${id}`, updated),
+      (saved) => ({
+        heroes: this.currentHeroes.map((h) => (h.id === saved.id ? saved : h)),
+      }),
+      { error: 'Could not save hero.' }
+    );
+  }
+
+  remove(id: number): void {
+    this.request(
+      this.http.delete<void>(`${HEROES_URL}/${id}`),
+      () => ({ heroes: this.currentHeroes.filter((h) => h.id !== id) }),
+      { error: 'Could not delete hero.' }
+    );
+  }
+
+  getHero(id: number): Observable<Hero | undefined> {
+    return this.heroes$.pipe(map((heroes) => heroes.find((h) => h.id === id)));
+  }
+
+  discoverAnother(): void {
+    this.discoverAgain$.next();
+  }
+
+  clearError(): void {
+    if (this.state$.value.error !== null) {
+      this.patch({ error: null });
+    }
+  }
+
+  private get currentHeroes(): Hero[] {
+    return this.state$.value.heroes;
+  }
+
+  private request<T>(
+    request$: Observable<T>,
+    onSuccess: (value: T) => Partial<HeroesState>,
+    onError: Partial<HeroesState>
+  ): void {
+    request$.subscribe({
+      next: (value) => this.patch(onSuccess(value)),
+      error: () => this.patch(onError),
     });
+  }
+
+  private patch(changes: Partial<HeroesState>): void {
+    this.state$.next({ ...this.state$.value, ...changes });
   }
 }

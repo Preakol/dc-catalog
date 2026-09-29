@@ -1,7 +1,20 @@
-<ng-container *ngIf="hero$ | async as hero; else notFound">
-  <dc-hero-form [hero]="hero" submitLabel="Save changes"
-                (submitted)="onSubmit(hero, $event)"></dc-hero-form>
-</ng-container>
-<ng-template #notFound>
-  <p class="text-slate-400">Hero not found.</p>
-</ng-template>
+<section class="mx-auto max-w-3xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  <ng-container *ngIf="hero$ | async as hero; else notFound">
+    <h2 class="mb-4 text-xl font-semibold text-slate-100">
+      Editing <span class="text-sky-400">{{ hero.name }}</span>
+    </h2>
+    <dc-hero-form [hero]="hero" submitLabel="Save changes"
+                  (submitted)="onSubmit(hero, $event)"></dc-hero-form>
+  </ng-container>
+
+  <ng-template #notFound>
+    <div class="rounded-xl bg-slate-800/60 p-8 text-center ring-1 ring-slate-700">
+      <p class="text-slate-300">Hero not found.</p>
+      <p class="mt-1 text-sm text-slate-500">It may have been deleted, or the link is wrong.</p>
+    </div>
+  </ng-template>
+</section>

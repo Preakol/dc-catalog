@@ -1,49 +1,67 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="mb-8 rounded-lg bg-slate-800 p-4">
-<div class="flex-row gap-3 mb-3">
-    <label class="block text-sm text-slate-300">Name</label>
-    <div class="flex gap-3">
-        <input formControlName="name" class="rounded bg-slate-700 px-2 py-1 text-white" />
-        <span *ngIf="form.controls.name.errors?.required" class="text-red-600">Name is required.</span>
-        <span *ngIf="form.controls.name.errors?.minlength" class="text-red-600">At least 2 characters.</span>
+<form [formGroup]="form" (ngSubmit)="onSubmit()"
+      class="rounded-xl bg-slate-800/60 p-5 ring-1 ring-slate-700">
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <label class="flex flex-col gap-1">
+      <span class="text-xs font-medium uppercase tracking-wide text-slate-400">Name</span>
+      <input formControlName="name" autocomplete="off"
+             class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+                    outline-none transition focus:ring-sky-500" />
+      <span *ngIf="form.controls.name.touched && form.controls.name.errors?.required"
+            class="text-xs text-rose-400">Name is required</span>
+      <span *ngIf="form.controls.name.touched && form.controls.name.errors?.minlength"
+            class="text-xs text-rose-400">At least 2 characters</span>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-xs font-medium uppercase tracking-wide text-slate-400">Real name</span>
+      <input formControlName="fullName" autocomplete="off"
+             class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+                    outline-none transition focus:ring-sky-500" />
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-xs font-medium uppercase tracking-wide text-slate-400">Alignment</span>
+      <select formControlName="alignment"
+              class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+                     outline-none transition focus:ring-sky-500">
+        <option *ngFor="let a of alignments" [value]="a">{{ a }}</option>
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-xs font-medium uppercase tracking-wide text-slate-400">Image URL</span>
+      <input formControlName="imageUrl" autocomplete="off" placeholder="optional"
+             class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+                    outline-none transition placeholder-slate-600 focus:ring-sky-500" />
+    </label>
+  </div>
+
+  <fieldset formGroupName="powerstats" class="mt-6">
+    <legend class="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+      Power stats (0-100)
+    </legend>
+
+    <div class="grid gap-x-8 gap-y-3 rounded-lg bg-slate-900/50 px-4 py-4 ring-1 ring-slate-700/60
+                sm:grid-cols-2">
+      <label *ngFor="let field of statFields" class="flex items-center gap-3">
+        <span class="w-20 shrink-0 text-xs text-slate-400">{{ field.label }}</span>
+
+        <input type="range" min="0" max="100" step="1"
+               [formControlName]="field.key"
+               [attr.aria-label]="field.label"
+               class="stat-slider min-w-0 flex-1" />
+
+        <span class="w-8 shrink-0 text-right font-mono text-sm font-semibold tabular-nums text-sky-400">
+          {{ form.get('powerstats.' + field.key)?.value }}
+        </span>
+      </label>
     </div>
-    <label class="block text-sm text-slate-300">Full name</label>
-    <input formControlName="fullName" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    <label class="block text-sm text-slate-300">Alignment</label>
-    <select formControlName="alignment" class="rounded bg-slate-700 px-2 py-1 text-white">
-    <option value="good">good</option>
-    <option value="bad">bad</option>
-    <option value="neutral">neutral</option>
-    </select>
-    <label class="block text-sm text-slate-300">Image Url</label>
-    <input formControlName="imageUrl" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    <div formGroupName="powerstats" class="flex gap-3">
-    <div>
-        <label class="block text-sm text-slate-300">Intelligence</label>
-        <input type="number" formControlName="intelligence" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    <div>
-        <label class="block text-sm text-slate-300">Strength</label>
-        <input type="number" formControlName="strength" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    <div>
-        <label class="block text-sm text-slate-300">Speed</label>
-        <input type="number" formControlName="speed" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    <div>
-        <label class="block text-sm text-slate-300">Durability</label>
-        <input type="number" formControlName="durability" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    <div>
-        <label class="block text-sm text-slate-300">Power</label>
-        <input type="number" formControlName="power" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    <div>
-        <label class="block text-sm text-slate-300">Combat</label>
-        <input type="number" formControlName="combat" class="rounded bg-slate-700 px-2 py-1 text-white" />
-    </div>
-    </div>
-</div>
-<button type="submit" [disabled]="form.invalid"
-        class="rounded bg-sky-600 px-3 py-1 text-white disabled:opacity-40">
-  {{submitLabel}}
-</button>
+  </fieldset>
+
+  <button type="submit" [disabled]="form.invalid"
+          class="mt-5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition
+                 hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40">
+    {{ submitLabel }}
+  </button>
+</form>

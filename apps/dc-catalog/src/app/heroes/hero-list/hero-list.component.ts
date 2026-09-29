@@ -1,43 +1,60 @@
 import { Component, OnInit } from '@angular/core';
-import { HeroService } from '../hero.service';
-import { Hero, HeroFormValue } from '../hero.model';
 import { FormControl } from '@angular/forms';
-import { combineLatest, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, startWith} from 'rxjs/operators';
-import { filterHeroes, ALIGNMENT_FILTERS, AlignmentFilter} from '../hero.model';
+import { Observable, combineLatest } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs/operators';
+
+import {
+  ALIGNMENT_FILTERS,
+  AlignmentFilter,
+  Hero,
+  HeroFormValue,
+} from '../hero.model';
+import { filterHeroes } from '../hero.filter';
+import { HeroService } from '../hero.service';
 
 @Component({
   selector: 'dc-hero-list',
   templateUrl: './hero-list.component.html',
-  styleUrls: ['./hero-list.component.css']
 })
 export class HeroListComponent implements OnInit {
-  title = 'DC Catalog';
+  readonly alignmentFilters = ALIGNMENT_FILTERS;
 
-  search = new FormControl('')
+  readonly search = new FormControl('');
+  readonly alignment = new FormControl('all');
 
-  search$ = this.search.valueChanges.pipe(
+  showForm = false;
+
+  readonly skeletons = Array.from({ length: 8 });
+
+  private readonly search$: Observable<string> = this.search.valueChanges.pipe(
     debounceTime(250),
     distinctUntilChanged(),
     startWith('')
-  )
+  );
 
-  readonly alignmentFilters = ALIGNMENT_FILTERS;
-
-  readonly alignment = new FormControl('all')
-
-  readonly alignment$: Observable<AlignmentFilter> = this.alignment.valueChanges.pipe(startWith('all'))
+  private readonly alignment$: Observable<AlignmentFilter> =
+    this.alignment.valueChanges.pipe(startWith('all'));
 
   readonly heroes$: Observable<Hero[]> = combineLatest([
     this.heroService.heroes$,
     this.search$,
-    this.alignment$
-  ]).pipe(
-    map(([heroes, term, alignment]) => filterHeroes(heroes, term, alignment))
-  )
+    this.alignment$,
+  ]).pipe(map(([heroes, term, alignment]) => filterHeroes(heroes, term, alignment)));
 
-  readonly status$ = this.heroService.status$
-  readonly error$ = this.heroService.error$
+  readonly status$ = this.heroService.status$;
+  readonly error$ = this.heroService.error$;
+  readonly importing$ = this.heroService.importing$;
+  readonly discovering$ = this.heroService.discovering$;
+  readonly discovered$ = this.heroService.discovered$;
+
+  readonly discoveredImported$: Observable<boolean> = combineLatest([
+    this.heroService.discovered$,
+    this.heroService.heroes$,
+  ]).pipe(
+    map(([discovered, heroes]) =>
+      !!discovered && heroes.some((h) => h.slug === discovered.slug)
+    )
+  );
 
   constructor(private heroService: HeroService) {}
 
@@ -45,19 +62,32 @@ export class HeroListComponent implements OnInit {
     this.heroService.load();
   }
 
-  onHeroDeleted(id: number): void {
-    this.heroService.remove(id);
-  }
-
-  onClickRetry(): void {
+  onRetry(): void {
     this.heroService.load();
   }
 
   onHeroSubmitted(value: HeroFormValue): void {
-    this.heroService.create(value)
+    this.heroService.create(value);
+    this.showForm = false;
+  }
+
+  onHeroDeleted(id: number): void {
+    this.heroService.remove(id);
+  }
+
+  onImportDiscovered(hero: Hero): void {
+    this.heroService.importHero(hero);
+  }
+
+  onDiscoverAnother(): void {
+    this.heroService.discoverAnother();
+  }
+
+  onDismissError(): void {
+    this.heroService.clearError();
   }
 
   trackById(index: number, hero: Hero): number {
-    return hero.id
+    return hero.id;
   }
 }
