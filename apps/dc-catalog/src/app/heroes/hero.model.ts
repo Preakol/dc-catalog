@@ -45,6 +45,7 @@ export interface HeroConnections {
 
 export interface Hero {
   id: number;
+  externalId: number | null;
   name: string;
   slug: string;
   powerstats: PowerStats;
@@ -54,6 +55,8 @@ export interface Hero {
   connections: HeroConnections;
   images: HeroImages;
 }
+
+export type ExternalHero = Omit<Hero, 'externalId'>;
 
 export type Alignment = 'good' | 'bad' | 'neutral';
 
@@ -71,7 +74,27 @@ export interface HeroFormValue {
   powerstats: PowerStats;
 }
 
+export type DetailSource = 'local-only' | 'enriched' | 'external-unavailable';
+
+export interface HeroDetailReady {
+  status: 'ready';
+  hero: Hero;
+  external: ExternalHero | null;
+  source: DetailSource;
+}
+
+export type HeroDetail =
+  | { status: 'loading' }
+  | { status: 'missing' }
+  | HeroDetailReady;
+
 export interface StatEntry {
   label: string;
   value: number;
+}
+
+export interface StatComparison {
+  label: string;
+  value: number;
+  canon: number;
 }

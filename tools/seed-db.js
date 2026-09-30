@@ -57,7 +57,9 @@ async function main() {
     throw new Error('Expected the API to return an array of heroes');
   }
 
-  const heroes = all.filter((hero) => hero.biography?.publisher === PUBLISHER);
+  const heroes = all
+    .filter((hero) => hero.biography?.publisher === PUBLISHER)
+    .map((hero) => ({ ...hero, externalId: hero.id }));
   if (heroes.length === 0) {
     throw new Error(`No heroes found for publisher "${PUBLISHER}"`);
   }

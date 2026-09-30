@@ -1,0 +1,131 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  <div *ngIf="(status$ | async) === 'loading'"
+       class="animate-pulse rounded-xl bg-slate-800/60 p-8 ring-1 ring-slate-700">
+    <div class="h-6 w-48 rounded bg-slate-700"></div>
+    <div class="mt-4 h-64 rounded bg-slate-700/60"></div>
+  </div>
+
+  <div *ngIf="(status$ | async) === 'missing'"
+       class="rounded-xl bg-slate-800/60 p-8 text-center ring-1 ring-slate-700">
+    <p class="text-slate-300">Hero not found.</p>
+    <p class="mt-1 text-sm text-slate-500">It may have been deleted, or the link is wrong.</p>
+  </div>
+
+  <article *ngIf="ready$ | async as ready" class="grid gap-6 md:grid-cols-[minmax(0,20rem)_1fr]">
+
+    <div class="overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700">
+      <img [src]="imageOf(ready)" [alt]="ready.hero.name" class="w-full object-cover" />
+    </div>
+
+    <div class="flex flex-col gap-5">
+      <header>
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="text-2xl font-semibold text-slate-100">{{ ready.hero.name }}</h2>
+
+          <span *ngIf="ready.source === 'local-only'"
+                class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase
+                       tracking-wide text-amber-300 ring-1 ring-amber-500/40">
+            Created here
+          </span>
+          <span *ngIf="ready.source === 'enriched'"
+                class="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase
+                       tracking-wide text-sky-300 ring-1 ring-sky-500/40">
+            Live from superhero API
+          </span>
+          <span *ngIf="ready.source === 'external-unavailable'"
+                class="rounded-full bg-slate-600/40 px-2 py-0.5 text-[10px] font-semibold uppercase
+                       tracking-wide text-slate-300 ring-1 ring-slate-500/40">
+            Source unreachable
+          </span>
+        </div>
+
+        <p *ngIf="ready.hero.biography?.fullName" class="mt-1 text-sm text-slate-400">
+          {{ ready.hero.biography.fullName }}
+        </p>
+
+        <p *ngIf="ready.source === 'local-only'" class="mt-2 text-xs text-slate-500">
+          This hero exists only in our catalog, so there is nothing to compare against.
+        </p>
+        <p *ngIf="ready.source === 'external-unavailable'" class="mt-2 text-xs text-slate-500">
+          The superhero API did not answer. Showing our stored copy.
+        </p>
+      </header>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+          <dt class="text-[11px] uppercase tracking-wide text-slate-500">Biography</dt>
+          <dd class="mt-2 text-slate-300">Publisher: {{ ready.hero.biography.publisher || 'Unknown' }}</dd>
+          <dd class="text-slate-300">Alignment: {{ ready.hero.biography.alignment }}</dd>
+          <dd class="text-slate-300">Born: {{ ready.hero.biography.placeOfBirth || 'Unknown' }}</dd>
+          <dd class="text-slate-300">First seen: {{ ready.hero.biography.firstAppearance || 'Unknown' }}</dd>
+          <dd *ngIf="ready.hero.biography.aliases?.length" class="text-slate-300">
+            Aliases: {{ ready.hero.biography.aliases.join(', ') }}
+          </dd>
+        </dl>
+
+        <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+          <dt class="text-[11px] uppercase tracking-wide text-slate-500">Appearance</dt>
+          <dd class="mt-2 text-slate-300">Race: {{ ready.hero.appearance.race || 'Unknown' }}</dd>
+          <dd class="text-slate-300">Gender: {{ ready.hero.appearance.gender || 'Unknown' }}</dd>
+          <dd class="text-slate-300">Height: {{ ready.hero.appearance.height.join(' / ') || 'Unknown' }}</dd>
+          <dd class="text-slate-300">Weight: {{ ready.hero.appearance.weight.join(' / ') || 'Unknown' }}</dd>
+        </dl>
+
+        <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+          <dt class="text-[11px] uppercase tracking-wide text-slate-500">Work</dt>
+          <dd class="mt-2 text-slate-300">{{ ready.hero.work.occupation || 'Unknown occupation' }}</dd>
+          <dd class="text-slate-300">Base: {{ ready.hero.work.base || 'Unknown' }}</dd>
+        </dl>
+
+        <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+          <dt class="text-[11px] uppercase tracking-wide text-slate-500">Connections</dt>
+          <dd class="mt-2 text-slate-300">{{ ready.hero.connections.groupAffiliation || 'None known' }}</dd>
+          <dd class="text-slate-300">{{ ready.hero.connections.relatives || 'No relatives listed' }}</dd>
+        </dl>
+      </div>
+
+      <div class="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700">
+        <h3 class="text-[11px] uppercase tracking-wide text-slate-500">Power stats</h3>
+
+        <div *ngIf="ready.external === null" class="mt-3 flex flex-col gap-2">
+          <div *ngFor="let stat of statsOf(ready.hero)" class="flex items-center gap-3">
+            <span class="w-10 font-mono text-[11px] text-slate-500">{{ stat.label }}</span>
+            <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-700/70">
+              <div class="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"
+                   [style.width.%]="stat.value"></div>
+            </div>
+            <span class="w-8 text-right font-mono text-[11px] tabular-nums text-slate-400">{{ stat.value }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="ready.external as external" class="mt-3 flex flex-col gap-2">
+          <p class="text-xs text-slate-500">Our catalog vs. the source of truth.</p>
+          <div *ngFor="let stat of comparisonOf(ready.hero, external)" class="flex items-center gap-3">
+            <span class="w-10 font-mono text-[11px] text-slate-500">{{ stat.label }}</span>
+            <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-700/70">
+              <div class="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"
+                   [style.width.%]="stat.value"></div>
+            </div>
+            <span class="w-8 text-right font-mono text-[11px] tabular-nums text-slate-300">{{ stat.value }}</span>
+            <span class="w-14 text-right font-mono text-[11px] tabular-nums"
+                  [class.text-slate-500]="stat.value === stat.canon"
+                  [class.text-amber-400]="stat.value !== stat.canon">
+              {{ stat.canon }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <a [routerLink]="['/heroes', ready.hero.id, 'edit']"
+           class="rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600">
+          Edit
+        </a>
+      </div>
+    </div>
+  </article>
+</section>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -11,7 +11,7 @@ import { HeroService } from '../hero.service';
   selector: 'dc-hero-edit',
   templateUrl: './hero-edit.component.html',
 })
-export class HeroEditComponent implements OnInit {
+export class HeroEditComponent {
   readonly hero$: Observable<Hero | undefined> = this.route.paramMap.pipe(
     switchMap((params) => this.heroService.getHero(Number(params.get('id'))))
   );
@@ -21,10 +21,6 @@ export class HeroEditComponent implements OnInit {
     private heroService: HeroService,
     private router: Router
   ) {}
-
-  ngOnInit(): void {
-    this.heroService.ensureLoaded();
-  }
 
   onSubmit(hero: Hero, value: HeroFormValue): void {
     this.heroService.update(hero.id, applyFormValue(hero, value));

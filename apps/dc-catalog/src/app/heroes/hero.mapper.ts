@@ -1,10 +1,16 @@
-import { Hero, HeroFormValue } from './hero.model';
-import { imagesFrom, nameToSlug, toAlignment } from './hero.utils';
+import {
+  ExternalHero,
+  Hero,
+  HeroDetailReady,
+  HeroFormValue,
+} from './hero.model';
+import { imagesFrom, isExternal, nameToSlug, toAlignment } from './hero.utils';
 
 const OUR_PUBLISHER = 'DC Comics';
 
 export function buildNewHero(input: HeroFormValue): Omit<Hero, 'id'> {
   return {
+    externalId: null,
     name: input.name,
     slug: nameToSlug(input.name),
     powerstats: input.powerstats,
@@ -28,6 +34,22 @@ export function buildNewHero(input: HeroFormValue): Omit<Hero, 'id'> {
     work: { occupation: '', base: '' },
     connections: { groupAffiliation: '', relatives: '' },
     images: imagesFrom(input.imageUrl),
+  };
+}
+
+export function toHeroDetail(
+  hero: Hero,
+  external: ExternalHero | null
+): HeroDetailReady {
+  if (!isExternal(hero)) {
+    return { status: 'ready', hero, external: null, source: 'local-only' };
+  }
+
+  return {
+    status: 'ready',
+    hero,
+    external,
+    source: external === null ? 'external-unavailable' : 'enriched',
   };
 }
 

@@ -3,6 +3,7 @@ import {
   Hero,
   HeroImages,
   PowerStats,
+  StatComparison,
   StatEntry,
 } from './hero.model';
 
@@ -22,6 +23,21 @@ const STAT_LABELS: [keyof PowerStats, string][] = [
 
 export function toStatEntries(stats: PowerStats): StatEntry[] {
   return STAT_LABELS.map(([key, label]) => ({ label, value: stats[key] }));
+}
+
+export function isExternal(hero: Hero): hero is Hero & { externalId: number } {
+  return hero.externalId !== null;
+}
+
+export function toStatComparison(
+  ours: PowerStats,
+  canon: PowerStats
+): StatComparison[] {
+  return STAT_LABELS.map(([key, label]) => ({
+    label,
+    value: ours[key],
+    canon: canon[key],
+  }));
 }
 
 export function raceOf(hero: Hero): string {

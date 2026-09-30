@@ -2,7 +2,7 @@
   class="group flex flex-col overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700
          transition hover:ring-sky-500/60 hover:shadow-lg hover:shadow-sky-500/10">
 
-  <div class="relative aspect-[3/4] overflow-hidden bg-slate-900">
+  <a [routerLink]="['/heroes', hero.id]" class="relative block aspect-[3/4] overflow-hidden bg-slate-900">
     <img [src]="imageUrl" [alt]="hero.name" loading="lazy"
          class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
 
@@ -11,11 +11,14 @@
           [ngClass]="alignmentClass">
       {{ alignment }}
     </span>
-  </div>
+  </a>
 
   <div class="flex flex-1 flex-col gap-3 p-4">
     <header>
-      <h3 class="truncate text-base font-semibold text-slate-100" [title]="hero.name">{{ hero.name }}</h3>
+      <a [routerLink]="['/heroes', hero.id]" [title]="hero.name"
+         class="block truncate text-base font-semibold text-slate-100 transition hover:text-sky-400">
+        {{ hero.name }}
+      </a>
       <p *ngIf="showFullName" class="truncate text-xs text-slate-400" [title]="fullName">{{ fullName }}</p>
       <p class="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{{ race }}</p>
     </header>

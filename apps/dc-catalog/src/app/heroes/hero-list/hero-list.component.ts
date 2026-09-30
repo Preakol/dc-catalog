@@ -1,69 +1,65 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Observable, combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import {
   ALIGNMENT_FILTERS,
   AlignmentFilter,
+  ExternalHero,
   Hero,
   HeroFormValue,
 } from '../hero.model';
-import { filterHeroes } from '../hero.filter';
 import { HeroService } from '../hero.service';
 
 @Component({
   selector: 'dc-hero-list',
   templateUrl: './hero-list.component.html',
 })
-export class HeroListComponent implements OnInit {
+export class HeroListComponent implements OnInit, OnDestroy {
   readonly alignmentFilters = ALIGNMENT_FILTERS;
-
   readonly search = new FormControl('');
-  readonly alignment = new FormControl('all');
 
   showForm = false;
 
-  readonly skeletons = Array.from({ length: 8 });
+  readonly skeletons = Array.from({ length: 12 });
 
-  private readonly search$: Observable<string> = this.search.valueChanges.pipe(
-    debounceTime(250),
-    distinctUntilChanged(),
-    startWith('')
-  );
-
-  private readonly alignment$: Observable<AlignmentFilter> =
-    this.alignment.valueChanges.pipe(startWith('all'));
-
-  readonly heroes$: Observable<Hero[]> = combineLatest([
-    this.heroService.heroes$,
-    this.search$,
-    this.alignment$,
-  ]).pipe(map(([heroes, term, alignment]) => filterHeroes(heroes, term, alignment)));
-
+  readonly heroes$ = this.heroService.heroes$;
+  readonly total$ = this.heroService.total$;
+  readonly query$ = this.heroService.query$$;
+  readonly totalPages$ = this.heroService.totalPages$;
   readonly status$ = this.heroService.status$;
   readonly error$ = this.heroService.error$;
   readonly importing$ = this.heroService.importing$;
   readonly discovering$ = this.heroService.discovering$;
   readonly discovered$ = this.heroService.discovered$;
+  readonly discoveredImported$ = this.heroService.discoveredImported$;
 
-  readonly discoveredImported$: Observable<boolean> = combineLatest([
-    this.heroService.discovered$,
-    this.heroService.heroes$,
-  ]).pipe(
-    map(([discovered, heroes]) =>
-      !!discovered && heroes.some((h) => h.slug === discovered.slug)
-    )
-  );
+  private readonly destroy$ = new Subject<void>();
 
   constructor(private heroService: HeroService) {}
 
   ngOnInit(): void {
-    this.heroService.load();
+    this.search.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((term: string) => this.heroService.setSearch(term));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onAlignment(alignment: AlignmentFilter): void {
+    this.heroService.setAlignment(alignment);
+  }
+
+  onPage(page: number): void {
+    this.heroService.goToPage(page);
   }
 
   onRetry(): void {
-    this.heroService.load();
+    this.heroService.reload();
   }
 
   onHeroSubmitted(value: HeroFormValue): void {
@@ -75,7 +71,7 @@ export class HeroListComponent implements OnInit {
     this.heroService.remove(id);
   }
 
-  onImportDiscovered(hero: Hero): void {
+  onImportDiscovered(hero: ExternalHero): void {
     this.heroService.importHero(hero);
   }
 
