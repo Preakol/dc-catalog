@@ -38,11 +38,25 @@
       <span class="font-mono text-sm tabular-nums text-slate-200">
         {{ price | currency: 'EUR':'symbol':'1.0-0' }}
       </span>
-      <button type="button" (click)="onBuyClick()"
-              class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white
-                     transition hover:bg-sky-500">
-        Buy
-      </button>
+      <ng-container [ngSwitch]="purchase">
+        <button *ngSwitchCase="'buy'" type="button" (click)="onBuyClick()"
+                class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white
+                       transition hover:bg-sky-500">
+          Buy
+        </button>
+
+        <a *ngSwitchCase="'in-cart'" routerLink="/cart"
+           class="rounded-lg px-3 py-1.5 text-xs font-medium text-sky-300 ring-1 ring-sky-500/40
+                  transition hover:bg-sky-500/10">
+          In cart
+        </a>
+
+        <span *ngSwitchCase="'owned'"
+              class="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-medium text-emerald-300
+                     ring-1 ring-emerald-500/40">
+          &check; Owned
+        </span>
+      </ng-container>
     </div>
 
     <div class="flex gap-2">

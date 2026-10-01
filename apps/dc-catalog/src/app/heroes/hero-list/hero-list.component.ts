@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, combineLatest } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 
 import {
   ALIGNMENT_FILTERS,
@@ -12,6 +12,13 @@ import {
 } from '../hero.model';
 import { HeroService } from '../hero.service';
 import { CartService } from '../../cart/cart.service';
+import { PurchaseState } from '../../cart/cart.model';
+import { toPurchaseState } from '../../cart/cart.utils';
+
+export interface HeroRow {
+  hero: Hero;
+  purchase: PurchaseState;
+}
 
 @Component({
   selector: 'dc-hero-list',
@@ -25,7 +32,7 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   readonly skeletons = Array.from({ length: 12 });
 
-  readonly heroes$ = this.heroService.heroes$;
+  private readonly heroes$ = this.heroService.heroes$;
   readonly total$ = this.heroService.total$;
   readonly query$ = this.heroService.query$$;
   readonly totalPages$ = this.heroService.totalPages$;
@@ -35,6 +42,19 @@ export class HeroListComponent implements OnInit, OnDestroy {
   readonly discovering$ = this.heroService.discovering$;
   readonly discovered$ = this.heroService.discovered$;
   readonly discoveredImported$ = this.heroService.discoveredImported$;
+
+  readonly rows$: Observable<HeroRow[]> = combineLatest([
+    this.heroes$,
+    this.cart.ownedIds$,
+    this.cart.cartIds$,
+  ]).pipe(
+    map(([heroes, owned, inCart]) =>
+      heroes.map((hero) => ({
+        hero,
+        purchase: toPurchaseState(owned.has(hero.id), inCart.has(hero.id)),
+      }))
+    )
+  );
 
   private readonly destroy$ = new Subject<void>();
 
@@ -88,7 +108,7 @@ export class HeroListComponent implements OnInit, OnDestroy {
     this.heroService.clearError();
   }
 
-  trackById(index: number, hero: Hero): number {
-    return hero.id;
+  trackByRow(index: number, row: HeroRow): number {
+    return row.hero.id;
   }
 }

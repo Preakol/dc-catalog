@@ -1,7 +1,8 @@
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { CartItem, CheckoutStatus } from '../cart.model';
+import { CartItem } from '../cart.model';
+import { CheckoutStatus } from '../cart.state';
 import { CartService } from '../cart.service';
 import { PaymentService } from '../payment.service';
 

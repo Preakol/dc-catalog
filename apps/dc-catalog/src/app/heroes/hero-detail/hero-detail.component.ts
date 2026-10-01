@@ -21,16 +21,8 @@ import {
   toStatEntries,
 } from '../hero.utils';
 import { CartService } from '../../cart/cart.service';
-
-export type PurchaseState = 'buy' | 'in-cart' | 'owned';
-
-function toPurchaseState(owned: boolean, inCart: boolean): PurchaseState {
-  if (owned) {
-    return 'owned';
-  }
-
-  return inCart ? 'in-cart' : 'buy';
-}
+import { PurchaseState } from '../../cart/cart.model';
+import { toPurchaseState } from '../../cart/cart.utils';
 
 @Component({
   selector: 'dc-hero-detail',

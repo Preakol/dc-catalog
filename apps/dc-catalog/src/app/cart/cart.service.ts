@@ -4,15 +4,9 @@ import { map } from 'rxjs/operators';
 
 import { Hero } from '../heroes/hero.model';
 import { PLACEHOLDER_IMAGE, priceOf } from '../heroes/hero.utils';
-import {
-  CartItem,
-  CartState,
-  CheckoutStatus,
-  Order,
-  cartTotal,
-  initialCartState,
-  ownsHero,
-} from './cart.model';
+import { CartItem, Order } from './cart.model';
+import { CartState, CheckoutStatus, initialCartState } from './cart.state';
+import { cartTotal, ownsHero } from './cart.utils';
 import { loadCart, loadOrders, saveCart, saveOrders } from './cart.storage';
 import { PaymentService, paymentErrorMessage } from './payment.service';
 
@@ -43,6 +37,18 @@ export class CartService {
   readonly orders$: Observable<Order[]> = this.state$.pipe(map((s) => s.orders));
   readonly status$: Observable<CheckoutStatus> = this.state$.pipe(map((s) => s.status));
   readonly error$: Observable<string | null> = this.state$.pipe(map((s) => s.error));
+
+  readonly cartIds$: Observable<Set<number>> = this.items$.pipe(
+    map((items) => new Set(items.map((item) => item.heroId)))
+  );
+
+  readonly ownedIds$: Observable<Set<number>> = this.orders$.pipe(
+    map((orders) => {
+      const ids = new Set<number>();
+      orders.forEach((order) => order.items.forEach((item) => ids.add(item.heroId)));
+      return ids;
+    })
+  );
 
   readonly checkoutAvailable = this.payment.available;
 

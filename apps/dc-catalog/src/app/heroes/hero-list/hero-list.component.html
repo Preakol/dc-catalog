@@ -133,7 +133,7 @@
   </div>
 
   <ng-container *ngSwitchCase="'loaded'">
-    <ng-container *ngIf="heroes$ | async as heroes">
+    <ng-container *ngIf="rows$ | async as rows">
       <div class="mb-4 flex items-baseline gap-2 text-sm text-slate-500">
         <span>{{ total$ | async }}</span>
         <span class="text-slate-600">in catalog</span>
@@ -142,15 +142,16 @@
         </span>
       </div>
 
-      <div *ngIf="heroes.length === 0"
+      <div *ngIf="rows.length === 0"
            class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
         <p class="text-slate-300">Nothing found.</p>
         <p class="mt-1 text-sm text-slate-500">Try a different search term or filter.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-        <dc-hero-card *ngFor="let hero of heroes; trackBy: trackById"
-                      [hero]="hero"
+        <dc-hero-card *ngFor="let row of rows; trackBy: trackByRow"
+                      [hero]="row.hero"
+                      [purchase]="row.purchase"
                       (buy)="onHeroBuy($event)"
                       (deleted)="onHeroDeleted($event)"></dc-hero-card>
       </div>

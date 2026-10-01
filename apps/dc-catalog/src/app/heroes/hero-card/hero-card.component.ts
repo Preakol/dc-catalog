@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 
 import { Hero, StatEntry } from '../hero.model';
+import { PurchaseState } from '../../cart/cart.model';
 import {
   PLACEHOLDER_IMAGE,
   fullNameOf,
@@ -11,10 +12,6 @@ import {
   toStatEntries,
 } from '../hero.utils';
 
-/**
- * Computed here rather than in the template: Angular rejects a slash inside
- * [class.bg-emerald-500/20], which is exactly how Tailwind spells opacity.
- */
 const ALIGNMENT_BADGE: Record<string, string> = {
   good: 'bg-emerald-500/20 text-emerald-300 ring-emerald-500/40',
   bad: 'bg-rose-500/20 text-rose-300 ring-rose-500/40',
@@ -27,6 +24,8 @@ const ALIGNMENT_BADGE: Record<string, string> = {
 })
 export class HeroCardComponent implements OnChanges {
   @Input() hero!: Hero;
+
+  @Input() purchase: PurchaseState = 'buy';
 
   @Output() deleted = new EventEmitter<number>();
 

@@ -12,10 +12,12 @@ function read(key: string): unknown {
   }
 }
 
-function write(key: string, value: unknown): void {
+function write(key: string, value: unknown): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
+    return false;
   }
 }
 
@@ -56,8 +58,8 @@ export function loadCart(): CartItem[] {
   return isUnknownArray(parsed) ? parsed.filter(isCartItem) : [];
 }
 
-export function saveCart(items: CartItem[]): void {
-  write(CART_KEY, items);
+export function saveCart(items: CartItem[]): boolean {
+  return write(CART_KEY, items);
 }
 
 export function loadOrders(): Order[] {
@@ -65,6 +67,6 @@ export function loadOrders(): Order[] {
   return isUnknownArray(parsed) ? parsed.filter(isOrder) : [];
 }
 
-export function saveOrders(orders: Order[]): void {
-  write(ORDERS_KEY, orders);
+export function saveOrders(orders: Order[]): boolean {
+  return write(ORDERS_KEY, orders);
 }
