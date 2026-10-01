@@ -1,0 +1,127 @@
+<section class="mx-auto max-w-4xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  <h2 class="mb-6 text-2xl font-semibold text-slate-100">Cart</h2>
+
+  <div *ngIf="error$ | async as error"
+       class="mb-4 flex items-start gap-3 rounded-lg bg-rose-500/10 px-4 py-3 ring-1 ring-rose-500/30">
+    <div class="flex-1">
+      <p class="text-sm font-medium text-rose-200">Payment declined</p>
+      <p class="mt-0.5 text-sm text-rose-300/80">{{ error }}</p>
+    </div>
+    <button type="button" (click)="onDismissError()"
+            class="rounded px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/20">
+      Dismiss
+    </button>
+  </div>
+
+  <div *ngIf="(status$ | async) === 'done'"
+       class="rounded-xl bg-emerald-500/10 p-8 text-center ring-1 ring-emerald-500/30">
+    <p class="text-lg font-semibold text-emerald-200">Payment authorised</p>
+    <p class="mt-1 text-sm text-emerald-300/80">
+      The heroes are now in your collection.
+    </p>
+    <a routerLink="/my-heroes"
+       class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium
+              text-white transition hover:bg-emerald-500">
+      Go to my heroes
+    </a>
+  </div>
+
+  <ng-container *ngIf="(status$ | async) !== 'done'">
+    <ng-container *ngIf="items$ | async as items">
+      <div *ngIf="items.length === 0"
+           class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+        <p class="text-slate-300">The cart is empty.</p>
+        <p class="mt-1 text-sm text-slate-500">Pick a hero in the catalog and press Buy.</p>
+      </div>
+
+      <div *ngIf="items.length > 0" class="grid gap-6 md:grid-cols-[1fr_20rem]">
+        <div class="flex flex-col gap-3">
+          <article *ngFor="let item of items; trackBy: trackByHeroId"
+                   class="flex items-center gap-4 rounded-xl bg-slate-800/70 p-3 ring-1 ring-slate-700">
+            <img [src]="item.imageUrl" [alt]="item.name" loading="lazy"
+                 class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-600" />
+            <a [routerLink]="['/heroes', item.heroId]"
+               class="min-w-0 flex-1 truncate font-medium text-slate-100 transition hover:text-sky-400">
+              {{ item.name }}
+            </a>
+            <span class="font-mono text-sm tabular-nums text-slate-300">
+              {{ item.price | currency: 'EUR':'symbol':'1.0-0' }}
+            </span>
+            <button type="button" (click)="onRemove(item.heroId)"
+                    [attr.aria-label]="'Remove ' + item.name"
+                    class="rounded-lg px-2 py-1 text-xs text-rose-300 ring-1 ring-rose-500/40
+                           transition hover:bg-rose-500/20">
+              Remove
+            </button>
+          </article>
+
+          <button type="button" (click)="onClear()"
+                  class="self-start text-xs text-slate-500 underline transition hover:text-slate-300">
+            Clear the cart
+          </button>
+        </div>
+
+        <aside class="flex flex-col gap-4 rounded-xl bg-slate-800/60 p-5 ring-1 ring-slate-700">
+          <div class="flex items-baseline justify-between">
+            <span class="text-sm text-slate-400">{{ items.length }} hero(es)</span>
+            <span class="font-mono text-xl tabular-nums text-slate-100">
+              {{ total$ | async | currency: 'EUR':'symbol':'1.0-0' }}
+            </span>
+          </div>
+
+          <div *ngIf="!keyPresent"
+               class="rounded-lg bg-amber-500/10 p-3 text-xs text-amber-200 ring-1 ring-amber-500/30">
+            <p class="font-medium">Checkout is disabled</p>
+            <p class="mt-1 text-amber-300/80">
+              Put a Stripe test key into <code>.env</code> as
+              <code>STRIPE_PUBLISHABLE_KEY=pk_test_...</code> and restart the dev server.
+            </p>
+          </div>
+
+          <div *ngIf="keyPresent && !scriptLoaded"
+               class="rounded-lg bg-amber-500/10 p-3 text-xs text-amber-200 ring-1 ring-amber-500/30">
+            <p class="font-medium">Stripe.js did not load</p>
+            <p class="mt-1 text-amber-300/80">
+              The script comes from <code>js.stripe.com</code>. Check the network tab —
+              an ad blocker or an offline machine will block it.
+            </p>
+          </div>
+
+          <div *ngIf="checkoutAvailable" class="flex flex-col gap-3">
+            <label class="flex flex-col gap-1">
+              <span class="text-[11px] uppercase tracking-wide text-slate-500">Card</span>
+              <div #cardHost
+                   class="rounded-lg bg-slate-900 px-3 py-3 ring-1 ring-slate-700
+                          transition focus-within:ring-sky-500"></div>
+            </label>
+
+            <p *ngIf="fieldError$ | async as fieldError" class="text-xs text-rose-300">
+              {{ fieldError }}
+            </p>
+
+            <button type="button" (click)="onSubmit()"
+                    [disabled]="(status$ | async) === 'paying' || (cardComplete$ | async) !== true"
+                    class="flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2.5
+                           text-sm font-medium text-white transition hover:bg-sky-500
+                           disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400">
+              <span *ngIf="(status$ | async) === 'paying'"
+                    class="h-3 w-3 animate-spin rounded-full border-2 border-sky-300/40 border-t-white"></span>
+              {{ (status$ | async) === 'paying' ? 'Authorising...' : 'Pay with test card' }}
+            </button>
+
+            <p class="text-[11px] leading-relaxed text-slate-500">
+              The fields above live in an iframe served by Stripe — this app never sees the
+              card number. Stripe test mode: use <code>4242 4242 4242 4242</code>, any future
+              date and any CVC. No money moves.
+            </p>
+          </div>
+
+        </aside>
+      </div>
+    </ng-container>
+  </ng-container>
+</section>

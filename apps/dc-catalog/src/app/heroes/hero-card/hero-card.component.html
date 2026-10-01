@@ -34,7 +34,18 @@
       </div>
     </div>
 
-    <div class="mt-auto flex gap-2 pt-1">
+    <div class="mt-auto flex items-center justify-between gap-2 pt-1">
+      <span class="font-mono text-sm tabular-nums text-slate-200">
+        {{ price | currency: 'EUR':'symbol':'1.0-0' }}
+      </span>
+      <button type="button" (click)="onBuyClick()"
+              class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white
+                     transition hover:bg-sky-500">
+        Buy
+      </button>
+    </div>
+
+    <div class="flex gap-2">
       <a [routerLink]="['/heroes', hero.id, 'edit']"
          class="flex-1 rounded-lg bg-slate-700 px-3 py-1.5 text-center text-xs font-medium text-slate-100
                 transition hover:bg-slate-600">

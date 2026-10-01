@@ -35,6 +35,7 @@ const OUT_DIR = path.join(ROOT, 'apps', 'dc-catalog', 'src', 'environments');
 const DEFAULTS = {
   API_URL: 'http://localhost:3000',
   HEROES_API_URL: 'https://akabab.github.io/superhero-api/api',
+  STRIPE_PUBLISHABLE_KEY: '',
 };
 
 function parseEnvFile(filePath) {
@@ -66,6 +67,7 @@ export const environment = {
   production: ${production},
   apiUrl: '${vars.API_URL}',
   heroesApiUrl: '${vars.HEROES_API_URL}',
+  stripePublishableKey: '${vars.STRIPE_PUBLISHABLE_KEY}',
 };
 `;
 }
@@ -76,7 +78,9 @@ function main() {
   const fromFile = parseEnvFile(ENV_FILE);
   const vars = { ...DEFAULTS, ...fromFile };
 
-  const missing = Object.keys(DEFAULTS).filter((key) => !fromFile[key]);
+  const missing = Object.keys(DEFAULTS).filter(
+    (key) => !fromFile[key] && DEFAULTS[key] !== ''
+  );
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.writeFileSync(path.join(OUT_DIR, 'environment.ts'), build(false, vars));
@@ -87,6 +91,13 @@ function main() {
     console.log('set-env: copy .env.example to .env to override them.');
   } else if (missing.length > 0) {
     console.log(`set-env: .env has no ${missing.join(', ')}, using defaults.`);
+  }
+
+  if (!vars.STRIPE_PUBLISHABLE_KEY) {
+    console.log('set-env: STRIPE_PUBLISHABLE_KEY is empty — checkout will be disabled.');
+    console.log('set-env: get a test key at https://dashboard.stripe.com/test/apikeys');
+  } else if (!vars.STRIPE_PUBLISHABLE_KEY.startsWith('pk_test_')) {
+    console.log('set-env: STRIPE_PUBLISHABLE_KEY does not look like a test key (pk_test_...).');
   }
 
   console.log(`set-env: apiUrl        = ${vars.API_URL}`);

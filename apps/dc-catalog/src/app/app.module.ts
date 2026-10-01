@@ -10,15 +10,19 @@ import { HeroListComponent } from './heroes/hero-list/hero-list.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HeroEditComponent } from './heroes/hero-edit/hero-edit.component';
 import { HeroDetailComponent } from './heroes/hero-detail/hero-detail.component';
+import { CartPageComponent } from './cart/cart-page/cart-page.component';
+import { MyHeroesComponent } from './cart/my-heroes/my-heroes.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    CartPageComponent,
     HeroCardComponent,
     HeroDetailComponent,
     HeroEditComponent,
     HeroFormComponent,
     HeroListComponent,
+    MyHeroesComponent,
   ],
   imports: [AppRoutingModule, BrowserModule, HttpClientModule, ReactiveFormsModule],
   providers: [],

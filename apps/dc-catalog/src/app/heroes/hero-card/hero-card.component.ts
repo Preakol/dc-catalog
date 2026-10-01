@@ -5,6 +5,7 @@ import {
   PLACEHOLDER_IMAGE,
   fullNameOf,
   hasFullName,
+  priceOf,
   raceOf,
   toAlignment,
   toStatEntries,
@@ -29,6 +30,8 @@ export class HeroCardComponent implements OnChanges {
 
   @Output() deleted = new EventEmitter<number>();
 
+  @Output() buy = new EventEmitter<Hero>();
+
   stats: StatEntry[] = [];
   imageUrl = PLACEHOLDER_IMAGE;
   race = '';
@@ -36,6 +39,7 @@ export class HeroCardComponent implements OnChanges {
   showFullName = false;
   alignment = '';
   alignmentClass = '';
+  price = 0;
 
   ngOnChanges(): void {
     this.stats = toStatEntries(this.hero.powerstats);
@@ -45,9 +49,14 @@ export class HeroCardComponent implements OnChanges {
     this.showFullName = hasFullName(this.hero);
     this.alignment = toAlignment(this.hero.biography?.alignment);
     this.alignmentClass = ALIGNMENT_BADGE[this.alignment];
+    this.price = priceOf(this.hero);
   }
 
   onDeleteClick(): void {
     this.deleted.emit(this.hero.id);
+  }
+
+  onBuyClick(): void {
+    this.buy.emit(this.hero);
   }
 }

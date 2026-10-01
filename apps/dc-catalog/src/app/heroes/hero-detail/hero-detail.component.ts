@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, combineLatest, of } from 'rxjs';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 
 import {
@@ -16,9 +16,21 @@ import { HeroService } from '../hero.service';
 import {
   PLACEHOLDER_IMAGE,
   isExternal,
+  priceOf,
   toStatComparison,
   toStatEntries,
 } from '../hero.utils';
+import { CartService } from '../../cart/cart.service';
+
+export type PurchaseState = 'buy' | 'in-cart' | 'owned';
+
+function toPurchaseState(owned: boolean, inCart: boolean): PurchaseState {
+  if (owned) {
+    return 'owned';
+  }
+
+  return inCart ? 'in-cart' : 'buy';
+}
 
 @Component({
   selector: 'dc-hero-detail',
@@ -42,7 +54,30 @@ export class HeroDetailComponent {
     map((detail) => (detail.status === 'ready' ? detail : null))
   );
 
-  constructor(private route: ActivatedRoute, private heroService: HeroService) {}
+  readonly purchase$: Observable<PurchaseState> = this.ready$.pipe(
+    switchMap((ready) =>
+      ready === null
+        ? of<PurchaseState>('buy')
+        : combineLatest([
+            this.cart.owns(ready.hero.id),
+            this.cart.inCart(ready.hero.id),
+          ]).pipe(map(([owned, inCart]) => toPurchaseState(owned, inCart)))
+    )
+  );
+
+  constructor(
+    private route: ActivatedRoute,
+    private heroService: HeroService,
+    private cart: CartService
+  ) {}
+
+  priceFor(hero: Hero): number {
+    return priceOf(hero);
+  }
+
+  onBuy(hero: Hero): void {
+    this.cart.add(hero);
+  }
 
   imageOf(ready: HeroDetailReady): string {
     return ready.external?.images.lg || ready.hero.images?.md || PLACEHOLDER_IMAGE;

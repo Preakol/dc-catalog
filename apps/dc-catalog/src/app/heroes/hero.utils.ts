@@ -40,6 +40,20 @@ export function toStatComparison(
   }));
 }
 
+export function priceOf(hero: Hero): number {
+  const stats = hero.powerstats;
+
+  return (
+    (stats.intelligence +
+      stats.strength +
+      stats.speed +
+      stats.durability +
+      stats.power +
+      stats.combat) *
+    2
+  );
+}
+
 export function raceOf(hero: Hero): string {
   return hero.appearance?.race ?? UNKNOWN_RACE;
 }

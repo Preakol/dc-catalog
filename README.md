@@ -48,10 +48,16 @@ Angular has no built-in `.env` support: the build is static and there is no
 | --- | --- | --- |
 | `API_URL` | `http://localhost:3000` | the local json-server (all CRUD) |
 | `HEROES_API_URL` | `https://akabab.github.io/superhero-api/api` | the free external API (read-only) |
+| `STRIPE_PUBLISHABLE_KEY` | empty | Stripe **test** key (`pk_test_...`); checkout is disabled while empty |
 
 `.env` and the generated `environment*.ts` are gitignored; `.env.example` is
 committed. **Anything placed here ends up in the JavaScript bundle and is
 visible to any user — never put secrets in a frontend `.env`.**
+
+A Stripe *publishable* key is safe here: it can only tokenise a card, never
+move money. Get one at https://dashboard.stripe.com/test/apikeys. The
+*secret* key (`sk_test_...`) must never appear in this repository — charging
+a card requires a server, which this project does not have.
 
 `db.json` is the database for the mock API. It is seeded from the free
 [akabab superhero API](https://akabab.github.io/superhero-api/), filtered to the

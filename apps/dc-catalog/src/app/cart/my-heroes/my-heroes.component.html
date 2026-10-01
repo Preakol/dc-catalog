@@ -1,0 +1,63 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  <header class="mb-6 flex flex-wrap items-baseline gap-4">
+    <h2 class="text-2xl font-semibold text-slate-100">My heroes</h2>
+    <span class="text-sm text-slate-500">
+      {{ ownedCount$ | async }} owned &middot;
+      {{ spent$ | async | currency: 'EUR':'symbol':'1.0-0' }} spent
+    </span>
+  </header>
+
+  <ng-container *ngIf="orders$ | async as orders">
+    <div *ngIf="orders.length === 0"
+         class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+      <p class="text-slate-300">Nothing bought yet.</p>
+      <a routerLink="/"
+         class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white
+                transition hover:bg-sky-500">
+        Browse the catalog
+      </a>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <article *ngFor="let order of orders; trackBy: trackByOrderId"
+               class="rounded-xl bg-slate-800/60 p-5 ring-1 ring-slate-700">
+        <header class="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-slate-700 pb-3">
+          <span class="font-mono text-sm text-slate-300">{{ order.id }}</span>
+          <span class="text-xs text-slate-500">{{ order.placedAt | date: 'medium' }}</span>
+          <span class="text-xs uppercase tracking-wide text-slate-500">
+            {{ order.cardBrand }} &middot;&middot;&middot;&middot; {{ order.cardLast4 }}
+          </span>
+          <span class="ml-auto font-mono text-sm tabular-nums text-slate-100">
+            {{ order.total | currency: 'EUR':'symbol':'1.0-0' }}
+          </span>
+        </header>
+
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <a *ngFor="let item of order.items; trackBy: trackByHeroId"
+             [routerLink]="['/heroes', item.heroId]"
+             class="group flex items-center gap-3 rounded-lg bg-slate-900/60 p-2 ring-1 ring-slate-700
+                    transition hover:ring-sky-500/60">
+            <img [src]="item.imageUrl" [alt]="item.name" loading="lazy"
+                 class="h-12 w-12 shrink-0 rounded object-cover" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-medium text-slate-100 transition group-hover:text-sky-400">
+                {{ item.name }}
+              </span>
+              <span class="block font-mono text-[11px] tabular-nums text-slate-500">
+                {{ item.price | currency: 'EUR':'symbol':'1.0-0' }}
+              </span>
+            </span>
+          </a>
+        </div>
+
+        <p class="mt-4 font-mono text-[11px] text-slate-600">
+          stripe payment_method: {{ order.paymentMethodId }}
+        </p>
+      </article>
+    </div>
+  </ng-container>
+</section>

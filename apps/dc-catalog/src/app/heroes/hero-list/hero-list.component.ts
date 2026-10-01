@@ -11,6 +11,7 @@ import {
   HeroFormValue,
 } from '../hero.model';
 import { HeroService } from '../hero.service';
+import { CartService } from '../../cart/cart.service';
 
 @Component({
   selector: 'dc-hero-list',
@@ -37,7 +38,7 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  constructor(private heroService: HeroService) {}
+  constructor(private heroService: HeroService, private cart: CartService) {}
 
   ngOnInit(): void {
     this.search.valueChanges
@@ -65,6 +66,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
   onHeroSubmitted(value: HeroFormValue): void {
     this.heroService.create(value);
     this.showForm = false;
+  }
+
+  onHeroBuy(hero: Hero): void {
+    this.cart.add(hero);
   }
 
   onHeroDeleted(id: number): void {
