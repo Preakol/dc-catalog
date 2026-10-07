@@ -14,10 +14,14 @@ import { HeroService } from '../hero.service';
 import { CartService } from '../../cart/cart.service';
 import { PurchaseState } from '../../cart/cart.model';
 import { toPurchaseState } from '../../cart/cart.utils';
+import { CompareButtonState } from '../../compare/compare.model';
+import { CompareService } from '../../compare/compare.service';
+import { toCompareButtonState } from '../../compare/compare.utils';
 
 export interface HeroRow {
   hero: Hero;
   purchase: PurchaseState;
+  compare: CompareButtonState;
 }
 
 @Component({
@@ -47,18 +51,25 @@ export class HeroListComponent implements OnInit, OnDestroy {
     this.heroes$,
     this.cart.ownedIds$,
     this.cart.cartIds$,
+    this.compare.selectedIds$,
+    this.compare.full$,
   ]).pipe(
-    map(([heroes, owned, inCart]) =>
+    map(([heroes, owned, inCart, selected, full]) =>
       heroes.map((hero) => ({
         hero,
         purchase: toPurchaseState(owned.has(hero.id), inCart.has(hero.id)),
+        compare: toCompareButtonState(selected.has(hero.id), full),
       }))
     )
   );
 
   private readonly destroy$ = new Subject<void>();
 
-  constructor(private heroService: HeroService, private cart: CartService) {}
+  constructor(
+    private heroService: HeroService,
+    private cart: CartService,
+    private compare: CompareService
+  ) {}
 
   ngOnInit(): void {
     this.search.valueChanges
@@ -90,6 +101,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   onHeroBuy(hero: Hero): void {
     this.cart.add(hero);
+  }
+
+  onCompareToggled(hero: Hero): void {
+    this.compare.toggle(hero);
   }
 
   onHeroDeleted(id: number): void {

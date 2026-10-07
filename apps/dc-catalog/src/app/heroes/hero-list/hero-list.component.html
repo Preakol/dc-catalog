@@ -152,6 +152,8 @@
         <dc-hero-card *ngFor="let row of rows; trackBy: trackByRow"
                       [hero]="row.hero"
                       [purchase]="row.purchase"
+                      [compare]="row.compare"
+                      (compareToggled)="onCompareToggled($event)"
                       (buy)="onHeroBuy($event)"
                       (deleted)="onHeroDeleted($event)"></dc-hero-card>
       </div>

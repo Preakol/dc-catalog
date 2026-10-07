@@ -155,6 +155,19 @@ export class HeroService {
       .pipe(catchError(() => of(undefined)));
   }
 
+  getHeroesByIds(ids: number[]): Observable<Hero[]> {
+    if (ids.length === 0) {
+      return of([]);
+    }
+
+    const params = ids.reduce(
+      (acc, id) => acc.append('id', String(id)),
+      new HttpParams()
+    );
+
+    return this.http.get<Hero[]>(HEROES_URL, { params });
+  }
+
   getExternalHero(externalId: number): Observable<ExternalHero | null> {
     return this.http
       .get<ExternalHero>(externalUrl(externalId))

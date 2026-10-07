@@ -59,6 +59,17 @@
       </ng-container>
     </div>
 
+    <button type="button" (click)="onCompareClick()"
+            [disabled]="compare === 'full'"
+            [ngClass]="{
+              'bg-slate-700 text-slate-100 hover:bg-slate-600': compare === 'add',
+              'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/40': compare === 'selected',
+              'bg-slate-800 text-slate-600 cursor-not-allowed': compare === 'full'
+            }"
+            class="w-full rounded-lg px-3 py-1.5 text-xs font-medium transition">
+      {{ compare === 'selected' ? '✓ In compare' : 'Compare' }}
+    </button>
+
     <div class="flex gap-2">
       <a [routerLink]="['/heroes', hero.id, 'edit']"
          class="flex-1 rounded-lg bg-slate-700 px-3 py-1.5 text-center text-xs font-medium text-slate-100

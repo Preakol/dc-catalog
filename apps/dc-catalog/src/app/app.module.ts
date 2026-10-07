@@ -12,11 +12,13 @@ import { HeroEditComponent } from './heroes/hero-edit/hero-edit.component';
 import { HeroDetailComponent } from './heroes/hero-detail/hero-detail.component';
 import { CartPageComponent } from './cart/cart-page/cart-page.component';
 import { MyHeroesComponent } from './cart/my-heroes/my-heroes.component';
+import { ComparePanelComponent } from './compare/compare-panel/compare-panel.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CartPageComponent,
+    ComparePanelComponent,
     HeroCardComponent,
     HeroDetailComponent,
     HeroEditComponent,

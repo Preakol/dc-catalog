@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core
 
 import { Hero, StatEntry } from '../hero.model';
 import { PurchaseState } from '../../cart/cart.model';
+import { CompareButtonState } from '../../compare/compare.model';
 import {
   PLACEHOLDER_IMAGE,
   fullNameOf,
@@ -27,9 +28,13 @@ export class HeroCardComponent implements OnChanges {
 
   @Input() purchase: PurchaseState = 'buy';
 
+  @Input() compare: CompareButtonState = 'add';
+
   @Output() deleted = new EventEmitter<number>();
 
   @Output() buy = new EventEmitter<Hero>();
+
+  @Output() compareToggled = new EventEmitter<Hero>();
 
   stats: StatEntry[] = [];
   imageUrl = PLACEHOLDER_IMAGE;
@@ -57,5 +62,9 @@ export class HeroCardComponent implements OnChanges {
 
   onBuyClick(): void {
     this.buy.emit(this.hero);
+  }
+
+  onCompareClick(): void {
+    this.compareToggled.emit(this.hero);
   }
 }

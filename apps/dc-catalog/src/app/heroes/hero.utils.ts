@@ -12,17 +12,23 @@ export const UNKNOWN_RACE = 'Unknown';
 export const PLACEHOLDER_IMAGE =
   'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/no-portrait.jpg';
 
-const STAT_LABELS: [keyof PowerStats, string][] = [
-  ['intelligence', 'INT'],
-  ['strength', 'STR'],
-  ['speed', 'SPD'],
-  ['durability', 'DUR'],
-  ['power', 'PWR'],
-  ['combat', 'CMB'],
+export interface StatField {
+  key: keyof PowerStats;
+  short: string;
+  label: string;
+}
+
+export const STAT_FIELDS: StatField[] = [
+  { key: 'intelligence', short: 'INT', label: 'Intelligence' },
+  { key: 'strength', short: 'STR', label: 'Strength' },
+  { key: 'speed', short: 'SPD', label: 'Speed' },
+  { key: 'durability', short: 'DUR', label: 'Durability' },
+  { key: 'power', short: 'PWR', label: 'Power' },
+  { key: 'combat', short: 'CMB', label: 'Combat' },
 ];
 
 export function toStatEntries(stats: PowerStats): StatEntry[] {
-  return STAT_LABELS.map(([key, label]) => ({ label, value: stats[key] }));
+  return STAT_FIELDS.map(({ key, short }) => ({ label: short, value: stats[key] }));
 }
 
 export function isExternal(hero: Hero): hero is Hero & { externalId: number } {
@@ -33,8 +39,8 @@ export function toStatComparison(
   ours: PowerStats,
   canon: PowerStats
 ): StatComparison[] {
-  return STAT_LABELS.map(([key, label]) => ({
-    label,
+  return STAT_FIELDS.map(({ key, short }) => ({
+    label: short,
     value: ours[key],
     canon: canon[key],
   }));

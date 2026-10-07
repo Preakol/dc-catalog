@@ -146,6 +146,17 @@
           </span>
         </ng-container>
 
+        <button type="button" (click)="onCompare(ready.hero)"
+                [disabled]="(compare$ | async) === 'full'"
+                [ngClass]="{
+                  'bg-slate-700 text-slate-100 hover:bg-slate-600': (compare$ | async) === 'add',
+                  'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/40': (compare$ | async) === 'selected',
+                  'bg-slate-800 text-slate-600 cursor-not-allowed': (compare$ | async) === 'full'
+                }"
+                class="rounded-lg px-4 py-2.5 text-sm font-medium transition">
+          {{ (compare$ | async) === 'selected' ? '✓ In compare' : 'Compare' }}
+        </button>
+
         <a [routerLink]="['/heroes', ready.hero.id, 'edit']"
            class="ml-auto rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600">
           Edit

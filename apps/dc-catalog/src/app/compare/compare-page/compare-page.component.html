@@ -1,0 +1,99 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  <h2 class="mb-6 text-2xl font-semibold text-slate-100">Compare</h2>
+
+  <div *ngIf="(status$ | async) === 'loading'"
+       class="animate-pulse rounded-xl bg-slate-800/60 p-8 ring-1 ring-slate-700">
+    <div class="h-6 w-40 rounded bg-slate-700"></div>
+    <div class="mt-4 h-56 rounded bg-slate-700/60"></div>
+  </div>
+
+  <div *ngIf="(status$ | async) === 'empty'"
+       class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+    <p class="text-slate-300">No heroes selected.</p>
+    <p class="mt-1 text-sm text-slate-500">Pick up to three heroes in the catalog and press Compare.</p>
+    <a routerLink="/"
+       class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white
+              transition hover:bg-sky-500">
+      Browse the catalog
+    </a>
+  </div>
+
+  <div *ngIf="(status$ | async) === 'error'"
+       class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+    <p class="text-slate-300">Could not load the heroes.</p>
+    <p class="mt-1 text-sm text-slate-500">Check that <code>npm run mock-api</code> is running.</p>
+  </div>
+
+  <div *ngIf="(status$ | async) === 'not-found'"
+       class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+    <p class="text-slate-300">None of the selected heroes exist.</p>
+    <p class="mt-1 text-sm text-slate-500">
+      Requested: <span class="font-mono">{{ (requestedIds$ | async)?.join(', ') }}</span>
+    </p>
+    <a routerLink="/"
+       class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white
+              transition hover:bg-sky-500">
+      Back to the catalog
+    </a>
+  </div>
+
+  <ng-container *ngIf="ready$ | async as ready">
+    <div *ngIf="ready.missingIds.length > 0"
+         class="mb-4 rounded-lg bg-amber-500/10 px-4 py-3 text-sm text-amber-200 ring-1 ring-amber-500/30">
+      Not found and skipped:
+      <span class="font-mono">{{ ready.missingIds.join(', ') }}</span>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl bg-slate-800/60 ring-1 ring-slate-700">
+      <table class="w-full min-w-[32rem] border-collapse text-sm">
+        <thead>
+          <tr>
+            <th class="w-32 border-b border-slate-700 px-4 py-3 text-left text-[11px]
+                       uppercase tracking-wide text-slate-500">Stat</th>
+            <th *ngFor="let hero of ready.heroes; trackBy: trackByHeroId"
+                class="border-b border-slate-700 px-4 py-3 text-center align-top">
+              <a [routerLink]="['/heroes', hero.id]" class="group block">
+                <img [src]="hero.images?.md" [alt]="hero.name" loading="lazy"
+                     class="mx-auto h-20 w-20 rounded-lg object-cover ring-1 ring-slate-600" />
+                <span class="mt-2 block truncate font-medium text-slate-100 transition group-hover:text-sky-400">
+                  {{ hero.name }}
+                </span>
+              </a>
+              <button type="button" (click)="onRemove(ready.heroes, hero.id)"
+                      [attr.aria-label]="'Remove ' + hero.name + ' from comparison'"
+                      class="mt-1 rounded px-2 py-0.5 text-[11px] text-rose-300 ring-1 ring-rose-500/40
+                             transition hover:bg-rose-500/20">
+                Remove
+              </button>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let row of ready.rows; trackBy: trackByLabel">
+            <th class="border-b border-slate-700/60 px-4 py-2.5 text-left font-normal text-slate-400">
+              {{ row.label }}
+            </th>
+            <td *ngFor="let cell of row.cells"
+                class="border-b border-slate-700/60 px-4 py-2.5 text-center font-mono tabular-nums"
+                [class.text-slate-300]="!cell.best"
+                [class.text-emerald-300]="cell.best"
+                [class.font-semibold]="cell.best">
+              {{ cell.value }}
+              <span *ngIf="cell.best" class="ml-1 text-[10px] text-emerald-500">best</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="mt-3 text-xs text-slate-500">
+      Highlighted is the best value in each row — highest for stats, lowest for price.
+      Ties are all highlighted.
+    </p>
+  </ng-container>
+</section>

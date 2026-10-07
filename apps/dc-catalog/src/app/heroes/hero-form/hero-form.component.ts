@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { ALIGNMENTS, Hero, HeroFormValue } from '../hero.model';
 import { toFormValue } from '../hero.mapper';
+import { STAT_FIELDS } from '../hero.utils';
 
 const DEFAULT_FORM_VALUE: HeroFormValue = {
   name: '',
@@ -18,15 +19,6 @@ const DEFAULT_FORM_VALUE: HeroFormValue = {
     combat: 50,
   },
 };
-
-const STAT_FIELDS: { key: keyof HeroFormValue['powerstats']; label: string }[] = [
-  { key: 'intelligence', label: 'Intelligence' },
-  { key: 'strength', label: 'Strength' },
-  { key: 'speed', label: 'Speed' },
-  { key: 'durability', label: 'Durability' },
-  { key: 'power', label: 'Power' },
-  { key: 'combat', label: 'Combat' },
-];
 
 const STAT_VALIDATORS = [
   Validators.required,
@@ -72,14 +64,12 @@ export class HeroFormComponent {
   constructor(private fb: FormBuilder) {}
 
   onSubmit(): void {
-    // Enter submits the form past the disabled button, so check again here.
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.submitted.emit(this.form.value as HeroFormValue);
-    // With no argument reset() would set every control to null, not to the defaults.
     this.form.reset(DEFAULT_FORM_VALUE);
   }
 }

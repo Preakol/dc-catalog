@@ -21,6 +21,9 @@ import {
   toStatEntries,
 } from '../hero.utils';
 import { CartService } from '../../cart/cart.service';
+import { CompareButtonState } from '../../compare/compare.model';
+import { CompareService } from '../../compare/compare.service';
+import { toCompareButtonState } from '../../compare/compare.utils';
 import { PurchaseState } from '../../cart/cart.model';
 import { toPurchaseState } from '../../cart/cart.utils';
 
@@ -57,11 +60,26 @@ export class HeroDetailComponent {
     )
   );
 
+  readonly compare$: Observable<CompareButtonState> = this.ready$.pipe(
+    switchMap((ready) =>
+      ready === null
+        ? of<CompareButtonState>('add')
+        : combineLatest([this.compareService.selectedIds$, this.compareService.full$]).pipe(
+            map(([selected, full]) => toCompareButtonState(selected.has(ready.hero.id), full))
+          )
+    )
+  );
+
   constructor(
     private route: ActivatedRoute,
     private heroService: HeroService,
-    private cart: CartService
+    private cart: CartService,
+    private compareService: CompareService
   ) {}
+
+  onCompare(hero: Hero): void {
+    this.compareService.toggle(hero);
+  }
 
   priceFor(hero: Hero): number {
     return priceOf(hero);

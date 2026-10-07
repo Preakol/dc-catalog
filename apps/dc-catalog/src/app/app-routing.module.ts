@@ -9,6 +9,11 @@ import { MyHeroesComponent } from './cart/my-heroes/my-heroes.component';
 const routes: Routes = [
   { path: '', component: HeroListComponent },
   { path: 'cart', component: CartPageComponent },
+  {
+    path: 'compare',
+    loadChildren: () =>
+      import('./compare/compare.module').then((m) => m.CompareModule),
+  },
   { path: 'my-heroes', component: MyHeroesComponent },
   { path: 'heroes/:id', component: HeroDetailComponent },
   { path: 'heroes/:id/edit', component: HeroEditComponent },
