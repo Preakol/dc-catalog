@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 
@@ -9,7 +9,6 @@ import { CompareReady, CompareStatus, CompareView } from '../compare.state';
 import { CompareService } from '../compare.service';
 import {
   buildRows,
-  formatIds,
   missingIds,
   sortByRequestedIds,
   parseIds,
@@ -44,19 +43,12 @@ export class ComparePageComponent {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private heroService: HeroService,
     private compare: CompareService
   ) {}
 
-  onRemove(heroes: Hero[], heroId: number): void {
-    const remaining = heroes.map((hero) => hero.id).filter((id) => id !== heroId);
-
+  onRemove(heroId: number): void {
     this.compare.remove(heroId);
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { ids: remaining.length > 0 ? formatIds(remaining) : null },
-    });
   }
 
   trackByHeroId(index: number, hero: Hero): number {

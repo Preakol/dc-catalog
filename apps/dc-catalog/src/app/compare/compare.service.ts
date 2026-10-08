@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -6,7 +7,9 @@ import { Hero } from '../heroes/hero.model';
 import { COMPARE_LIMIT, CompareEntry } from './compare.model';
 import { CompareState, initialCompareState } from './compare.state';
 import { loadCompare, saveCompare } from './compare.storage';
-import { toCompareEntry } from './compare.utils';
+import { formatIds, toCompareEntry } from './compare.utils';
+
+const COMPARE_PATH = '/compare';
 
 @Injectable({ providedIn: 'root' })
 export class CompareService {
@@ -31,6 +34,8 @@ export class CompareService {
 
   readonly limit = COMPARE_LIMIT;
 
+  constructor(private router: Router) {}
+
   add(hero: Hero): void {
     const { entries } = this.state$.value;
 
@@ -53,15 +58,29 @@ export class CompareService {
   }
 
   remove(heroId: number): void {
-    this.persist(this.state$.value.entries.filter((entry) => entry.heroId !== heroId));
+    const entries = this.state$.value.entries.filter((entry) => entry.heroId !== heroId);
+
+    this.persist(entries);
+    this.syncUrl(entries.map((entry) => entry.heroId));
   }
 
   clear(): void {
     this.persist([]);
+    this.syncUrl([]);
   }
 
   replaceWith(entries: CompareEntry[]): void {
     this.persist(entries.slice(0, COMPARE_LIMIT));
+  }
+
+  private syncUrl(ids: number[]): void {
+    if (this.router.url.split('?')[0] !== COMPARE_PATH) {
+      return;
+    }
+
+    this.router.navigate([], {
+      queryParams: { ids: ids.length > 0 ? formatIds(ids) : null },
+    });
   }
 
   private persist(entries: CompareEntry[]): void {

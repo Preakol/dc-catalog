@@ -63,7 +63,7 @@
                   {{ hero.name }}
                 </span>
               </a>
-              <button type="button" (click)="onRemove(ready.heroes, hero.id)"
+              <button type="button" (click)="onRemove(hero.id)"
                       [attr.aria-label]="'Remove ' + hero.name + ' from comparison'"
                       class="mt-1 rounded px-2 py-0.5 text-[11px] text-rose-300 ring-1 ring-rose-500/40
                              transition hover:bg-rose-500/20">
