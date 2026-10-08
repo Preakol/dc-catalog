@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { HeroCardComponent } from './heroes/hero-card/hero-card.component';
 import { HeroFormComponent } from './heroes/hero-form/hero-form.component';
 import { HeroListComponent } from './heroes/hero-list/hero-list.component';
+import { PaginationComponent } from './heroes/pagination/pagination.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HeroEditComponent } from './heroes/hero-edit/hero-edit.component';
 import { HeroDetailComponent } from './heroes/hero-detail/hero-detail.component';
@@ -25,6 +26,7 @@ import { ComparePanelComponent } from './compare/compare-panel/compare-panel.com
     HeroFormComponent,
     HeroListComponent,
     MyHeroesComponent,
+    PaginationComponent,
   ],
   imports: [AppRoutingModule, BrowserModule, HttpClientModule, ReactiveFormsModule],
   providers: [],

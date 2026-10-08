@@ -137,10 +137,13 @@
       <div class="mb-4 flex items-baseline gap-2 text-sm text-slate-500">
         <span>{{ total$ | async }}</span>
         <span class="text-slate-600">in catalog</span>
-        <span *ngIf="(totalPages$ | async) as pages" class="ml-auto text-xs text-slate-600">
-          page {{ (query$ | async)?.page }} of {{ pages }}
-        </span>
       </div>
+
+      <ng-container *ngIf="pagination$ | async as pagination">
+        <dc-pagination *ngIf="pagination.totalPages > 1" class="mb-4 block"
+                       [page]="pagination.page" [totalPages]="pagination.totalPages"
+                       (goTo)="onPage($event)"></dc-pagination>
+      </ng-container>
 
       <div *ngIf="rows.length === 0"
            class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
@@ -158,29 +161,11 @@
                       (deleted)="onHeroDeleted($event)"></dc-hero-card>
       </div>
 
-      <nav *ngIf="(totalPages$ | async) as pages"
-           class="mt-8 flex items-center justify-center gap-2"
-           aria-label="Pagination">
-        <ng-container *ngIf="(query$ | async) as query">
-          <button type="button" (click)="onPage(query.page - 1)" [disabled]="query.page <= 1"
-                  class="rounded-lg px-3 py-2 text-sm text-slate-300 ring-1 ring-slate-700 transition
-                         hover:text-sky-400 hover:ring-sky-500/50
-                         disabled:opacity-30 disabled:hover:text-slate-300 disabled:hover:ring-slate-700">
-            &larr; Prev
-          </button>
-
-          <span class="px-3 font-mono text-sm tabular-nums text-slate-400">
-            {{ query.page }} / {{ pages }}
-          </span>
-
-          <button type="button" (click)="onPage(query.page + 1)" [disabled]="query.page >= pages"
-                  class="rounded-lg px-3 py-2 text-sm text-slate-300 ring-1 ring-slate-700 transition
-                         hover:text-sky-400 hover:ring-sky-500/50
-                         disabled:opacity-30 disabled:hover:text-slate-300 disabled:hover:ring-slate-700">
-            Next &rarr;
-          </button>
-        </ng-container>
-      </nav>
+      <ng-container *ngIf="pagination$ | async as pagination">
+        <dc-pagination *ngIf="pagination.totalPages > 1" class="mt-8 block"
+                       [page]="pagination.page" [totalPages]="pagination.totalPages"
+                       (goTo)="onPage($event)"></dc-pagination>
+      </ng-container>
     </ng-container>
   </ng-container>
 </ng-container>

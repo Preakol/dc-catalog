@@ -24,6 +24,11 @@ export interface HeroRow {
   compare: CompareButtonState;
 }
 
+export interface PaginationView {
+  page: number;
+  totalPages: number;
+}
+
 @Component({
   selector: 'dc-hero-list',
   templateUrl: './hero-list.component.html',
@@ -62,6 +67,11 @@ export class HeroListComponent implements OnInit, OnDestroy {
       }))
     )
   );
+
+  readonly pagination$: Observable<PaginationView> = combineLatest([
+    this.query$,
+    this.totalPages$,
+  ]).pipe(map(([query, totalPages]) => ({ page: query.page, totalPages })));
 
   private readonly destroy$ = new Subject<void>();
 

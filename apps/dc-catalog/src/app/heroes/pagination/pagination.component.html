@@ -1,0 +1,25 @@
+<nav class="flex items-center justify-center gap-2" aria-label="Pagination">
+  <button type="button" [class]="buttonClass" [disabled]="page <= 1"
+          (click)="goTo.emit(1)" aria-label="First page" title="First page">
+    &laquo;
+  </button>
+
+  <button type="button" [class]="buttonClass" [disabled]="page <= 1"
+          (click)="goTo.emit(page - 1)">
+    &larr; Prev
+  </button>
+
+  <span class="px-3 font-mono text-sm tabular-nums text-slate-400">
+    {{ page }} / {{ totalPages }}
+  </span>
+
+  <button type="button" [class]="buttonClass" [disabled]="page >= totalPages"
+          (click)="goTo.emit(page + 1)">
+    Next &rarr;
+  </button>
+
+  <button type="button" [class]="buttonClass" [disabled]="page >= totalPages"
+          (click)="goTo.emit(totalPages)" aria-label="Last page" title="Last page">
+    &raquo;
+  </button>
+</nav>
