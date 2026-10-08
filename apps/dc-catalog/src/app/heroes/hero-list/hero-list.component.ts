@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, Subject, combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operators';
 
 import {
   ALIGNMENT_FILTERS,
@@ -72,6 +72,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.query$
+      .pipe(take(1))
+      .subscribe((query) => this.search.setValue(query.term, { emitEvent: false }));
+
     this.search.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((term: string) => this.heroService.setSearch(term));
