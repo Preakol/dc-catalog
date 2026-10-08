@@ -68,10 +68,6 @@ export function fullNameOf(hero: Hero): string {
   return hero.biography?.fullName?.trim() ?? '';
 }
 
-export function hasFullName(hero: Hero): boolean {
-  return fullNameOf(hero).length > 0;
-}
-
 export function toAlignment(value: string | undefined): Alignment {
   return value === 'bad' || value === 'neutral' ? value : 'good';
 }

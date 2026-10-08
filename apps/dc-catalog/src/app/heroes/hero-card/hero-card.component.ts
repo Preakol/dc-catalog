@@ -6,7 +6,6 @@ import { CompareButtonState } from '../../compare/compare.model';
 import {
   PLACEHOLDER_IMAGE,
   fullNameOf,
-  hasFullName,
   priceOf,
   raceOf,
   toAlignment,
@@ -40,7 +39,6 @@ export class HeroCardComponent implements OnChanges {
   imageUrl = PLACEHOLDER_IMAGE;
   race = '';
   fullName = '';
-  showFullName = false;
   alignment = '';
   alignmentClass = '';
   price = 0;
@@ -50,7 +48,6 @@ export class HeroCardComponent implements OnChanges {
     this.imageUrl = this.hero.images?.md || PLACEHOLDER_IMAGE;
     this.race = raceOf(this.hero);
     this.fullName = fullNameOf(this.hero);
-    this.showFullName = hasFullName(this.hero);
     this.alignment = toAlignment(this.hero.biography?.alignment);
     this.alignmentClass = ALIGNMENT_BADGE[this.alignment];
     this.price = priceOf(this.hero);

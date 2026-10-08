@@ -1,5 +1,5 @@
 <article
-  class="group flex flex-col overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700
+  class="group flex h-full flex-col overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700
          transition hover:ring-sky-500/60 hover:shadow-lg hover:shadow-sky-500/10">
 
   <a [routerLink]="['/heroes', hero.id]" class="relative block aspect-[3/4] overflow-hidden bg-slate-900">
@@ -19,7 +19,7 @@
          class="block truncate text-base font-semibold text-slate-100 transition hover:text-sky-400">
         {{ hero.name }}
       </a>
-      <p *ngIf="showFullName" class="truncate text-xs text-slate-400" [title]="fullName">{{ fullName }}</p>
+      <p class="min-h-[1rem] truncate text-xs text-slate-400" [title]="fullName">{{ fullName }}</p>
       <p class="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{{ race }}</p>
     </header>
 
