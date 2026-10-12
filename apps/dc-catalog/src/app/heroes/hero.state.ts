@@ -2,6 +2,18 @@ import { AlignmentFilter, Hero } from './hero.model';
 
 export type HeroesStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
+export type ListMode = 'paged' | 'infinite';
+
+export interface ListModeOption {
+  value: ListMode;
+  label: string;
+}
+
+export const LIST_MODES: ListModeOption[] = [
+  {value: 'paged', label: 'Pages'},
+  {value: 'infinite', label: 'Infinite'}
+]
+
 export interface HeroQuery {
   term: string;
   alignment: AlignmentFilter;
@@ -17,6 +29,8 @@ export interface HeroesState {
   error: string | null;
   importing: boolean;
   discovering: boolean;
+  mode: ListMode;
+  loadingMore: boolean;
 }
 
 export const initialQuery: HeroQuery = {
@@ -34,8 +48,14 @@ export const initialState: HeroesState = {
   error: null,
   importing: false,
   discovering: false,
+  mode: 'paged',
+  loadingMore: false
 };
 
 export function totalPages(state: HeroesState): number {
   return Math.max(1, Math.ceil(state.total / state.query.pageSize));
+}
+
+export function isAppend(mode: ListMode, page: number): boolean {
+  return mode === "infinite" && page > 1;
 }

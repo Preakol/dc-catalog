@@ -14,6 +14,7 @@ import { HeroDetailComponent } from './heroes/hero-detail/hero-detail.component'
 import { CartPageComponent } from './cart/cart-page/cart-page.component';
 import { MyHeroesComponent } from './cart/my-heroes/my-heroes.component';
 import { ComparePanelComponent } from './compare/compare-panel/compare-panel.component';
+import { InViewDirective } from './heroes/in-view.directive';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { ComparePanelComponent } from './compare/compare-panel/compare-panel.com
     HeroListComponent,
     MyHeroesComponent,
     PaginationComponent,
+    InViewDirective,
   ],
   imports: [AppRoutingModule, BrowserModule, HttpClientModule, ReactiveFormsModule],
   providers: [],

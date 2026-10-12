@@ -10,6 +10,7 @@ import {
   Hero,
   HeroFormValue,
 } from '../hero.model';
+import { LIST_MODES, ListMode } from '../hero.state';
 import { HeroService } from '../hero.service';
 import { CartService } from '../../cart/cart.service';
 import { PurchaseState } from '../../cart/cart.model';
@@ -27,6 +28,7 @@ export interface HeroRow {
 export interface PaginationView {
   page: number;
   totalPages: number;
+  mode: ListMode;
 }
 
 @Component({
@@ -35,6 +37,7 @@ export interface PaginationView {
 })
 export class HeroListComponent implements OnInit, OnDestroy {
   readonly alignmentFilters = ALIGNMENT_FILTERS;
+  readonly listModes = LIST_MODES;
   readonly search = new FormControl('');
 
   showForm = false;
@@ -51,6 +54,9 @@ export class HeroListComponent implements OnInit, OnDestroy {
   readonly discovering$ = this.heroService.discovering$;
   readonly discovered$ = this.heroService.discovered$;
   readonly discoveredImported$ = this.heroService.discoveredImported$;
+  readonly mode$ = this.heroService.mode$;
+  readonly loadingMore$ = this.heroService.loadingMore$;
+  readonly canLoadMore$ = this.heroService.canLoadMore$;
 
   readonly rows$: Observable<HeroRow[]> = combineLatest([
     this.heroes$,
@@ -71,7 +77,8 @@ export class HeroListComponent implements OnInit, OnDestroy {
   readonly pagination$: Observable<PaginationView> = combineLatest([
     this.query$,
     this.totalPages$,
-  ]).pipe(map(([query, totalPages]) => ({ page: query.page, totalPages })));
+    this.mode$,
+  ]).pipe(map(([query, totalPages, mode]) => ({ page: query.page, totalPages, mode})));
 
   private readonly destroy$ = new Subject<void>();
 
@@ -98,6 +105,14 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   onAlignment(alignment: AlignmentFilter): void {
     this.heroService.setAlignment(alignment);
+  }
+
+  onMode(mode: ListMode): void {
+    this.heroService.setMode(mode);
+  }
+
+  onLoadMore(): void {
+    this.heroService.loadMore();
   }
 
   onPage(page: number): void {

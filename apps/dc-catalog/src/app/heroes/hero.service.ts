@@ -16,11 +16,13 @@ import { environment } from '../../environments/environment';
 import { ExternalHero, Hero, HeroFormValue } from './hero.model';
 import {
   HeroQuery,
+  ListMode,
   HeroesState,
   HeroesStatus,
   initialQuery,
   initialState,
   totalPages,
+  isAppend,
 } from './hero.state';
 import { buildNewHero } from './hero.mapper';
 
@@ -70,6 +72,9 @@ export class HeroService {
   readonly error$: Observable<string | null> = this.state$.pipe(map((s) => s.error));
   readonly importing$: Observable<boolean> = this.state$.pipe(map((s) => s.importing));
   readonly discovering$: Observable<boolean> = this.state$.pipe(map((s) => s.discovering));
+  readonly mode$: Observable<ListMode> = this.state$.pipe(map((s) => s.mode));
+  readonly loadingMore$: Observable<boolean> = this.state$.pipe(map((s) => s.loadingMore));
+  readonly canLoadMore$: Observable<boolean> = this.state$.pipe(map((s) => s.mode === "infinite" && s.status === "loaded" && s.query.page < totalPages(s)))
 
   private readonly discoverAgain$ = new Subject<void>();
 
@@ -99,10 +104,15 @@ export class HeroService {
   constructor(private http: HttpClient) {
     combineLatest([this.query$, this.refresh$])
       .pipe(
-        tap(([query]) => this.patch({ query, status: 'loading', error: null })),
-        switchMap(([query]) => this.fetchPage(query))
+        map(([query]) => ({query, append: isAppend(this.state$.value.mode, query.page)})),
+        tap(({query, append}) => this.patch(
+          append
+          ? { query, loadingMore: true, error: null}
+          : { query, status: 'loading', error: null }
+        )),
+        switchMap(({query, append}) => this.fetchPage(query, append))
       )
-      .subscribe();
+      .subscribe(); 
   }
 
   setSearch(term: string): void {
@@ -111,6 +121,11 @@ export class HeroService {
 
   setAlignment(alignment: HeroQuery['alignment']): void {
     this.patchQuery({ alignment, page: 1 });
+  }
+
+  setMode(mode: ListMode): void {
+    this.patch({mode: mode})
+    this.patchQuery({page: 1})
   }
 
   goToPage(page: number): void {
@@ -122,7 +137,26 @@ export class HeroService {
     }
   }
 
+  loadMore(): void {
+    const state = this.state$.value;
+    const page = this.query$.value.page;
+
+    if (state.mode !== "infinite" || state.loadingMore || state.status === "loading") {
+      return;
+    }
+
+    if (page >= totalPages(state)) {
+      return;
+    }
+
+    this.patchQuery({page: page + 1})
+  }
+
   reload(): void {
+    if (this.state$.value.mode === "infinite") {
+      this.patchQuery({page: 1})
+    }
+
     this.refresh$.next();
   }
 
@@ -195,21 +229,28 @@ export class HeroService {
     );
   }
 
-  private fetchPage(query: HeroQuery): Observable<unknown> {
+  private fetchPage(query: HeroQuery, append: boolean): Observable<unknown> {
     return this.http
       .get<Hero[]>(HEROES_URL, { params: toParams(query), observe: 'response' })
       .pipe(
         tap((res: HttpResponse<Hero[]>) => {
+          const page = res.body ?? [];
+
           this.patch({
-            heroes: res.body ?? [],
+            heroes: append ? [...this.state$.value.heroes, ...page] : page,
             total: Number(res.headers.get('X-Total-Count') ?? 0),
             status: 'loaded',
+            loadingMore: false,
           });
 
           this.goToPage(query.page);
         }),
         catchError(() => {
-          this.patch({ status: 'error', error: 'Could not load heroes.' });
+          this.patch(
+            append
+            ? {loadingMore: false, error: 'Could not load more heroes'}
+            : { status: 'error', error: 'Could not load heroes.' }
+          );
           return of(null);
         })
       );

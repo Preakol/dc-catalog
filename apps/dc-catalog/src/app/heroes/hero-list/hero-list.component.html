@@ -134,16 +134,19 @@
 
   <ng-container *ngSwitchCase="'loaded'">
     <ng-container *ngIf="rows$ | async as rows">
-      <div class="mb-4 flex items-baseline gap-2 text-sm text-slate-500">
+      <div *ngIf="mode$ | async as mode" class="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-500">
         <span>{{ total$ | async }}</span>
         <span class="text-slate-600">in catalog</span>
+        <div class="ml-auto flex gap-1 rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
+          <button *ngFor="let option of listModes" type="button" (click)="onMode(option.value)"
+            class="rounded-md px-3 py-1 text-xs font-medium transition"
+            [class.bg-sky-600]="mode === option.value"
+            [class.text-white]="mode === option.value"
+            [class.text-slate-400]="mode !== option.value">
+            {{option.label}}
+          </button>
+        </div>
       </div>
-
-      <ng-container *ngIf="pagination$ | async as pagination">
-        <dc-pagination *ngIf="pagination.totalPages > 1" class="mb-4 block"
-                       [page]="pagination.page" [totalPages]="pagination.totalPages"
-                       (goTo)="onPage($event)"></dc-pagination>
-      </ng-container>
 
       <div *ngIf="rows.length === 0"
            class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
@@ -161,10 +164,24 @@
                       (deleted)="onHeroDeleted($event)"></dc-hero-card>
       </div>
 
+      <div *ngIf="canLoadMore$ | async" 
+          dcInView (dcInView)="onLoadMore()"
+          class="mt-8 flex h-16 items-center justify-center text-sm text-slate-500">
+        <span *ngIf="loadingMore$ | async" class="flex items-center gap-2">
+          <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-sky-400"></span>
+          Loading more...
+        </span>
+      </div>
+
       <ng-container *ngIf="pagination$ | async as pagination">
-        <dc-pagination *ngIf="pagination.totalPages > 1" class="mt-8 block"
+        <dc-pagination *ngIf="pagination.mode === 'paged' && pagination.totalPages > 1" class="mt-8 block"
                        [page]="pagination.page" [totalPages]="pagination.totalPages"
-                       (goTo)="onPage($event)"></dc-pagination>
+                       (goTo)="onPage($event)">
+                      </dc-pagination>
+        <p *ngIf="pagination.mode === 'infinite' && pagination.page >= pagination.totalPages"
+           class="mt-8 text-center text-sm text-slate-600">
+          That's everything.
+        </p>
       </ng-container>
     </ng-container>
   </ng-container>
