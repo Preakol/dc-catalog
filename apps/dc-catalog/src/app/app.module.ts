@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { HeroEditComponent } from './heroes/hero-edit/hero-edit.component';
 import { HeroDetailComponent } from './heroes/hero-detail/hero-detail.component';
 import { CartPageComponent } from './cart/cart-page/cart-page.component';
+import { CartDrawerComponent } from './cart/cart-drawer/cart-drawer.component';
 import { MyHeroesComponent } from './cart/my-heroes/my-heroes.component';
 import { ComparePanelComponent } from './compare/compare-panel/compare-panel.component';
 import { InViewDirective } from './heroes/in-view.directive';
@@ -19,6 +20,7 @@ import { InViewDirective } from './heroes/in-view.directive';
 @NgModule({
   declarations: [
     AppComponent,
+    CartDrawerComponent,
     CartPageComponent,
     ComparePanelComponent,
     HeroCardComponent,

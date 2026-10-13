@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { CartService } from './cart/cart.service';
 
@@ -12,5 +14,19 @@ export class AppComponent {
 
   readonly cartCount$: Observable<number> = this.cart.count$;
 
-  constructor(private cart: CartService) {}
+  drawerOpen = false;
+
+  constructor(private cart: CartService, private router: Router) {
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => this.closeDrawer());
+  }
+
+  openDrawer(): void {
+    this.drawerOpen = true;
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen = false;
+  }
 }

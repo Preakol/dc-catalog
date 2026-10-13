@@ -12,16 +12,18 @@
           My heroes
         </a>
 
-        <a routerLink="/cart" routerLinkActive="bg-slate-800 text-slate-100"
-           class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400
-                  transition hover:text-sky-400">
+        <button type="button" (click)="openDrawer()"
+                [class.bg-slate-800]="drawerOpen"
+                [class.text-slate-100]="drawerOpen"
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400
+                       transition hover:text-sky-400">
           Cart
           <span *ngIf="(cartCount$ | async) as count"
                 class="rounded-full bg-sky-600 px-2 py-0.5 text-[11px] font-semibold
                        tabular-nums text-white">
             {{ count }}
           </span>
-        </a>
+        </button>
       </nav>
     </div>
   </header>
@@ -31,4 +33,5 @@
   </main>
 
   <dc-compare-panel></dc-compare-panel>
+  <dc-cart-drawer [open]="drawerOpen" (closed)="closeDrawer()"></dc-cart-drawer>
 </div>
