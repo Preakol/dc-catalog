@@ -105,11 +105,11 @@ export class HeroService {
     combineLatest([this.query$, this.refresh$])
       .pipe(
         map(([query]) => ({query, append: isAppend(this.state$.value.mode, query.page)})),
-        tap(({query, append}) => this.patch(
-          append
-          ? { query, loadingMore: true, error: null}
-          : { query, status: 'loading', error: null }
-        )),
+        tap(({query, append}) => this.patch({
+          query,
+          error: null,
+          ...(append ? {loadingMore: true} : {status: 'loading'})
+        })),
         switchMap(({query, append}) => this.fetchPage(query, append))
       )
       .subscribe(); 

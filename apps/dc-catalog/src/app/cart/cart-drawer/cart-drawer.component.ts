@@ -15,7 +15,7 @@ export class CartDrawerComponent {
     constructor(private cart: CartService) {}
 
     @HostListener('document:keydown.escape')
-    onEscape(): void {
+    onClose(): void {
         if (this.open) {
             this.closed.emit();
         }

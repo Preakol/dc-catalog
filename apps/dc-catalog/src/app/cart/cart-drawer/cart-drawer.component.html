@@ -1,16 +1,15 @@
-<div *ngIf="open" (click)="closed.emit()"
+<div *ngIf="open" (click)="onClose()"
      class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm"></div>
 
 <aside role="dialog" aria-modal="true" aria-label="Cart"
        class="fixed right-0 top-0 z-[60] flex h-full w-full max-w-sm flex-col
               border-l border-slate-800 bg-slate-900 shadow-2xl
               transition-transform duration-300"
-       [class.translate-x-0]="open"
        [class.translate-x-full]="!open">
 
   <header class="flex items-center gap-3 border-b border-slate-800 px-5 py-4">
     <h2 class="text-lg font-semibold text-slate-100">Cart</h2>
-    <button type="button" (click)="closed.emit()" aria-label="Close cart"
+    <button type="button" (click)="onClose()" aria-label="Close cart"
             class="ml-auto rounded-lg px-2 py-1 text-xl leading-none text-slate-500
                    transition hover:text-slate-200">
       &times;

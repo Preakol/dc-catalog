@@ -13,8 +13,7 @@
         </a>
 
         <button type="button" (click)="openDrawer()"
-                [class.bg-slate-800]="drawerOpen"
-                [class.text-slate-100]="drawerOpen"
+                [ngClass]="{'bg-slate-800 text-slate-100': drawerOpen}"
                 class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400
                        transition hover:text-sky-400">
           Cart
