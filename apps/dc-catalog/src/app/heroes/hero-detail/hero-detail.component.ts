@@ -19,6 +19,10 @@ import {
   priceOf,
   toStatComparison,
   toStatEntries,
+  aliasesOf,
+  alterEgosOf,
+  orUnknown,
+  UNKNOWN
 } from '../hero.utils';
 import { CartService } from '../../cart/cart.service';
 import { CompareButtonState } from '../../compare/compare.model';
@@ -95,6 +99,18 @@ export class HeroDetailComponent {
 
   statsOf(hero: Hero): StatEntry[] {
     return toStatEntries(hero.powerstats);
+  }
+
+  textOf(value: string | null, replacer: string = UNKNOWN): string {
+    return orUnknown(value, replacer);
+  }
+
+  alterEgosFor(hero: Hero): string {
+    return alterEgosOf(hero);
+  }
+
+  aliasesFor(hero: Hero): string {
+    return aliasesOf(hero)
   }
 
   comparisonOf(hero: Hero, external: ExternalHero): StatComparison[] {

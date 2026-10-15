@@ -7,7 +7,11 @@ import {
   StatEntry,
 } from './hero.model';
 
-export const UNKNOWN_RACE = 'Unknown';
+export const UNKNOWN = 'Unknown';
+export const UNKNOWN_RACE = UNKNOWN;
+
+const NO_ALTER_EGOS = 'No alter egos found.';
+const NO_ALIASES = 'No aliases found.'
 
 export const PLACEHOLDER_IMAGE =
   'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/no-portrait.jpg';
@@ -80,3 +84,22 @@ export function imagesFrom(imageUrl: string): HeroImages {
   const image = imageUrl.trim() || PLACEHOLDER_IMAGE;
   return { xs: image, sm: image, md: image, lg: image };
 }
+
+export function orUnknown(value: string | null | undefined, replacer: string): string {
+  const text = value?.trim() ?? '';
+
+  return text === '' || text === '-' ? replacer : text;
+}
+
+export function alterEgosOf(hero: Hero): string {
+  const text = hero.biography?.alterEgos?.trim() ?? '';
+
+  return text || NO_ALTER_EGOS;
+}
+
+export function aliasesOf(hero: Hero): string {
+  const aliases = hero.biography?.aliases ?? [];
+
+  return aliases.length === 0 ? NO_ALIASES : aliases.join(', ');
+}
+

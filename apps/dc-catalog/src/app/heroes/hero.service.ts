@@ -47,7 +47,7 @@ function toParams(query: HeroQuery): HttpParams {
     .set('_limit', String(query.pageSize));
 
   if (query.term.trim().length > 0) {
-    params = params.set('q', query.term.trim());
+    params = params.set('search', query.term.trim());
   }
 
   if (query.alignment !== 'all') {

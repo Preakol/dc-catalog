@@ -61,31 +61,32 @@
           <dt class="text-[11px] uppercase tracking-wide text-slate-500">Biography</dt>
           <dd class="mt-2 text-slate-300">Publisher: {{ ready.hero.biography.publisher || 'Unknown' }}</dd>
           <dd class="text-slate-300">Alignment: {{ ready.hero.biography.alignment }}</dd>
-          <dd class="text-slate-300">Born: {{ ready.hero.biography.placeOfBirth || 'Unknown' }}</dd>
-          <dd class="text-slate-300">First seen: {{ ready.hero.biography.firstAppearance || 'Unknown' }}</dd>
-          <dd *ngIf="ready.hero.biography.aliases?.length" class="text-slate-300">
-            Aliases: {{ ready.hero.biography.aliases.join(', ') }}
-          </dd>
+          <dd class="text-slate-300">Born: {{ textOf(ready.hero.biography.placeOfBirth) }}</dd>
+          <dd class="text-slate-300">First seen: {{ textOf(ready.hero.biography.firstAppearance) }}</dd>
+          <dd class="text-slate-300">Aliases: {{ aliasesFor(ready.hero) }}</dd>
+          <dd class="text-slate-300">Alter egos: {{ alterEgosFor(ready.hero) }}</dd>
         </dl>
 
         <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
           <dt class="text-[11px] uppercase tracking-wide text-slate-500">Appearance</dt>
-          <dd class="mt-2 text-slate-300">Race: {{ ready.hero.appearance.race || 'Unknown' }}</dd>
-          <dd class="text-slate-300">Gender: {{ ready.hero.appearance.gender || 'Unknown' }}</dd>
+          <dd class="mt-2 text-slate-300">Race: {{ textOf(ready.hero.appearance.race) }}</dd>
+          <dd class="text-slate-300">Gender: {{ textOf(ready.hero.appearance.gender) }}</dd>
+          <dd class="text-slate-300">Eyes: {{ textOf(ready.hero.appearance.eyeColor) }}</dd>
+          <dd class="text-slate-300">Hair: {{ textOf(ready.hero.appearance.hairColor) }}</dd>
           <dd class="text-slate-300">Height: {{ ready.hero.appearance.height.join(' / ') || 'Unknown' }}</dd>
           <dd class="text-slate-300">Weight: {{ ready.hero.appearance.weight.join(' / ') || 'Unknown' }}</dd>
         </dl>
 
         <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
           <dt class="text-[11px] uppercase tracking-wide text-slate-500">Work</dt>
-          <dd class="mt-2 text-slate-300">{{ ready.hero.work.occupation || 'Unknown occupation' }}</dd>
-          <dd class="text-slate-300">Base: {{ ready.hero.work.base || 'Unknown' }}</dd>
+          <dd class="mt-2 text-slate-300">{{ textOf(ready.hero.work.occupation, 'Unknown occupation') }}</dd>
+          <dd class="text-slate-300">Base: {{ textOf(ready.hero.work.base) }}</dd>
         </dl>
 
         <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
           <dt class="text-[11px] uppercase tracking-wide text-slate-500">Connections</dt>
-          <dd class="mt-2 text-slate-300">{{ ready.hero.connections.groupAffiliation || 'None known' }}</dd>
-          <dd class="text-slate-300">{{ ready.hero.connections.relatives || 'No relatives listed' }}</dd>
+          <dd class="mt-2 text-slate-300">{{ textOf(ready.hero.connections.groupAffiliation, 'None known') }}</dd>
+          <dd class="text-slate-300">{{ textOf(ready.hero.connections.relatives, 'No relatives listed') }}</dd>
         </dl>
       </div>
 
