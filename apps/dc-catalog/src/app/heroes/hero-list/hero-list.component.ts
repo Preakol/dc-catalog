@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operators';
 
@@ -18,6 +19,7 @@ import { toPurchaseState } from '../../cart/cart.utils';
 import { CompareButtonState } from '../../compare/compare.model';
 import { CompareService } from '../../compare/compare.service';
 import { toCompareButtonState } from '../../compare/compare.utils';
+import { sameParams, toQueryParams } from '../hero-url';
 
 export interface HeroRow {
   hero: Hero;
@@ -85,7 +87,9 @@ export class HeroListComponent implements OnInit, OnDestroy {
   constructor(
     private heroService: HeroService,
     private cart: CartService,
-    private compare: CompareService
+    private compare: CompareService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -96,6 +100,21 @@ export class HeroListComponent implements OnInit, OnDestroy {
     this.search.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((term: string) => this.heroService.setSearch(term));
+
+    combineLatest([this.query$, this.mode$])
+      .pipe(
+        map(([query, mode], index) => ({
+          queryParams: toQueryParams({
+            search: query.term,
+            alignment: query.alignment,
+            mode,
+            page: query.page,
+          }),
+          replaceUrl: index === 0,
+        })),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(({ queryParams, replaceUrl }) => this.writeUrl(queryParams, replaceUrl));
   }
 
   ngOnDestroy(): void {
@@ -154,5 +173,13 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   trackByRow(index: number, row: HeroRow): number {
     return row.hero.id;
+  }
+
+  private writeUrl(queryParams: Params, replaceUrl: boolean): void {
+    if (sameParams(queryParams, this.route.snapshot.queryParams)) {
+      return;
+    }
+
+    this.router.navigate([], { queryParams, replaceUrl });
   }
 }
