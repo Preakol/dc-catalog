@@ -14,15 +14,15 @@ import {
 import { toHeroDetail } from '../hero.mapper';
 import { HeroService } from '../hero.service';
 import {
+  aliasesOf,
+  alterEgosOf,
   PLACEHOLDER_IMAGE,
   isExternal,
   priceOf,
   toStatComparison,
   toStatEntries,
-  aliasesOf,
-  alterEgosOf,
   orUnknown,
-  UNKNOWN
+  UNKNOWN,
 } from '../hero.utils';
 import { CartService } from '../../cart/cart.service';
 import { CompareButtonState } from '../../compare/compare.model';
@@ -110,7 +110,7 @@ export class HeroDetailComponent {
   }
 
   aliasesFor(hero: Hero): string {
-    return aliasesOf(hero)
+    return aliasesOf(hero);
   }
 
   comparisonOf(hero: Hero, external: ExternalHero): StatComparison[] {

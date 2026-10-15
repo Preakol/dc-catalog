@@ -11,7 +11,7 @@ export const UNKNOWN = 'Unknown';
 export const UNKNOWN_RACE = UNKNOWN;
 
 const NO_ALTER_EGOS = 'No alter egos found.';
-const NO_ALIASES = 'No aliases found.'
+const NO_ALIASES = 'No aliases found.';
 
 export const PLACEHOLDER_IMAGE =
   'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/no-portrait.jpg';
@@ -102,4 +102,3 @@ export function aliasesOf(hero: Hero): string {
 
   return aliases.length === 0 ? NO_ALIASES : aliases.join(', ');
 }
-
