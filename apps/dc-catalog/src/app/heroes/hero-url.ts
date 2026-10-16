@@ -1,6 +1,6 @@
 import { Params } from '@angular/router';
-import { AlignmentFilter } from './hero.model';
-import { ListMode } from './hero.state';
+import { ALIGNMENT_FILTERS, AlignmentFilter } from './hero.model';
+import { LIST_MODES, ListMode } from './hero.state';
 
 export interface CatalogConfig {
   search: string;
@@ -39,8 +39,47 @@ export function toQueryParams(config: CatalogConfig): Params {
   return params;
 }
 
+export function fromQueryParams(params: Params): CatalogConfig {
+  return {
+    search: readText(params.search),
+    alignment: readAlignment(readText(params.alignment)),
+    mode: readMode(readText(params.mode)),
+    page: readPage(readText(params.page)),
+  };
+}
+
 export function sameParams(a: Params, b: Params): boolean {
   const keys = Object.keys(a);
 
   return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+}
+
+function readText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (Array.isArray(value) && typeof value[0] === 'string') {
+    return value[0].trim();
+  }
+
+  return '';
+}
+
+function readAlignment(value: string): AlignmentFilter {
+  return ALIGNMENT_FILTERS.find((item) => item === value) ?? DEFAULT_CONFIG.alignment;
+}
+
+function readMode(value: string): ListMode {
+  return LIST_MODES.find((option) => option.value === value)?.value ?? DEFAULT_CONFIG.mode;
+}
+
+function readPage(value: string): number {
+  if (!/^\d+$/.test(value)) {
+    return DEFAULT_CONFIG.page;
+  }
+
+  const page = Number(value);
+
+  return page >= 1 ? page : DEFAULT_CONFIG.page;
 }

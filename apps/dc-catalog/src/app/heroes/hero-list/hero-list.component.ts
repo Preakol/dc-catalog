@@ -2,7 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Observable, Subject, combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operators';
+import { 
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  takeUntil,
+  timeInterval,
+} from 'rxjs/operators';
 
 import {
   ALIGNMENT_FILTERS,
@@ -19,7 +26,10 @@ import { toPurchaseState } from '../../cart/cart.utils';
 import { CompareButtonState } from '../../compare/compare.model';
 import { CompareService } from '../../compare/compare.service';
 import { toCompareButtonState } from '../../compare/compare.utils';
-import { sameParams, toQueryParams } from '../hero-url';
+import { CatalogConfig, fromQueryParams, sameParams, toQueryParams } from '../hero-url';
+
+const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_BURST_MS = 800;
 
 export interface HeroRow {
   hero: Hero;
@@ -93,28 +103,37 @@ export class HeroListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.query$
-      .pipe(take(1))
-      .subscribe((query) => this.search.setValue(query.term, { emitEvent: false }));
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => this.applyUrl(params));
 
-    this.search.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe((term: string) => this.heroService.setSearch(term));
+    const term$: Observable<string> = this.search.valueChanges;
 
-    combineLatest([this.query$, this.mode$])
+    term$
       .pipe(
-        map(([query, mode], index) => ({
-          queryParams: toQueryParams({
-            search: query.term,
-            alignment: query.alignment,
-            mode,
-            page: query.page,
-          }),
-          replaceUrl: index === 0,
+        debounceTime(SEARCH_DEBOUNCE_MS),
+        distinctUntilChanged(),
+        timeInterval(),
+        map(({ value, interval }, index) => ({
+          term: value,
+          replaceUrl: index > 0 && interval < SEARCH_BURST_MS,
         })),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ term, replaceUrl }) =>
+        this.changeConfig({ search: term, page: 1 }, replaceUrl)
+      );
+
+    combineLatest([this.query$, this.totalPages$, this.mode$, this.status$])
+      .pipe(
+        filter(([, , mode, status]) => mode === 'paged' && status === 'loaded'),
         takeUntil(this.destroy$),
       )
-      .subscribe(({ queryParams, replaceUrl }) => this.writeUrl(queryParams, replaceUrl));
+      .subscribe(([query, totalPages]) => {
+        if (query.page > totalPages) {
+          this.changeConfig({ page: totalPages }, true);
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -123,19 +142,19 @@ export class HeroListComponent implements OnInit, OnDestroy {
   }
 
   onAlignment(alignment: AlignmentFilter): void {
-    this.heroService.setAlignment(alignment);
+    this.changeConfig({ alignment, page: 1 }, false);
   }
 
   onMode(mode: ListMode): void {
-    this.heroService.setMode(mode);
+    this.changeConfig({ mode, page: 1 }, false);
+  }
+
+  onPage(page: number): void {
+    this.changeConfig({ page }, false);
   }
 
   onLoadMore(): void {
     this.heroService.loadMore();
-  }
-
-  onPage(page: number): void {
-    this.heroService.goToPage(page);
   }
 
   onRetry(): void {
@@ -175,10 +194,25 @@ export class HeroListComponent implements OnInit, OnDestroy {
     return row.hero.id;
   }
 
-  private writeUrl(queryParams: Params, replaceUrl: boolean): void {
-    if (sameParams(queryParams, this.route.snapshot.queryParams)) {
+  private applyUrl(params: Params): void {
+    const config = fromQueryParams(params);
+    const canonical = toQueryParams(config);
+
+    if (!sameParams(params, canonical)) {
+      this.router.navigate([], { queryParams: canonical, replaceUrl: true });
       return;
     }
+
+    if (this.search.value !== config.search) {
+      this.search.setValue(config.search, { emitEvent: false });
+    }
+
+    this.heroService.applyConfig(config);
+  }
+
+  private changeConfig(changes: Partial<CatalogConfig>, replaceUrl: boolean): void {
+    const current = fromQueryParams(this.route.snapshot.queryParams);
+    const queryParams = toQueryParams({ ...current, ...changes });
 
     this.router.navigate([], { queryParams, replaceUrl });
   }

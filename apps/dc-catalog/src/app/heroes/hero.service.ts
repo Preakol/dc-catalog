@@ -25,6 +25,7 @@ import {
   isAppend,
 } from './hero.state';
 import { buildNewHero } from './hero.mapper';
+import { CatalogConfig } from './hero-url';
 
 const HEROES_URL = `${environment.apiUrl}/heroes`;
 
@@ -115,25 +116,22 @@ export class HeroService {
       .subscribe(); 
   }
 
-  setSearch(term: string): void {
-    this.patchQuery({ term, page: 1 });
-  }
+  applyConfig(config: CatalogConfig): void {
+    const modeChanged = this.state$.value.mode !== config.mode;
+    const page = config.mode === 'paged' ? config.page : 1;
+    const query = this.query$.value;
 
-  setAlignment(alignment: HeroQuery['alignment']): void {
-    this.patchQuery({ alignment, page: 1 });
-  }
+    const queryChanged =
+      query.term !== config.search ||
+      query.alignment !== config.alignment ||
+      (config.mode === 'paged' && query.page !== config.page);
 
-  setMode(mode: ListMode): void {
-    this.patch({mode: mode})
-    this.patchQuery({page: 1})
-  }
+    if (modeChanged) {
+      this.patch({ mode: config.mode });
+    }
 
-  goToPage(page: number): void {
-    const last = totalPages(this.state$.value);
-    const clamped = Math.min(Math.max(1, page), last);
-
-    if (clamped !== this.query$.value.page) {
-      this.patchQuery({ page: clamped });
+    if (modeChanged || queryChanged) {
+      this.patchQuery({ term: config.search, alignment: config.alignment, page });
     }
   }
 
@@ -242,8 +240,6 @@ export class HeroService {
             status: 'loaded',
             loadingMore: false,
           });
-
-          this.goToPage(query.page);
         }),
         catchError(() => {
           this.patch(
