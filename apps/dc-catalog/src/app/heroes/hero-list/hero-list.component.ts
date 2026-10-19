@@ -18,7 +18,7 @@ import {
   Hero,
   HeroFormValue,
 } from '../hero.model';
-import { LIST_MODES, ListMode } from '../hero.state';
+import { HeroSort, LIST_MODES, ListMode, SORT_OPTIONS } from '../hero.state';
 import { HeroService } from '../hero.service';
 import { CartService } from '../../cart/cart.service';
 import { PurchaseState } from '../../cart/cart.model';
@@ -26,7 +26,7 @@ import { toPurchaseState } from '../../cart/cart.utils';
 import { CompareButtonState } from '../../compare/compare.model';
 import { CompareService } from '../../compare/compare.service';
 import { toCompareButtonState } from '../../compare/compare.utils';
-import { CatalogConfig, fromQueryParams, sameParams, toQueryParams } from '../hero-url';
+import { CatalogConfig, DEFAULT_CONFIG, fromQueryParams, sameParams, toQueryParams } from '../hero-url';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_BURST_MS = 800;
@@ -49,8 +49,11 @@ export interface PaginationView {
 })
 export class HeroListComponent implements OnInit, OnDestroy {
   readonly alignmentFilters = ALIGNMENT_FILTERS;
+  readonly sortOptions = SORT_OPTIONS;
   readonly listModes = LIST_MODES;
-  readonly search = new FormControl('');
+
+  readonly search = new FormControl(DEFAULT_CONFIG.search);
+  readonly sortControl = new FormControl(DEFAULT_CONFIG.sort);
 
   showForm = false;
 
@@ -123,6 +126,12 @@ export class HeroListComponent implements OnInit, OnDestroy {
       .subscribe(({ term, replaceUrl }) =>
         this.changeConfig({ search: term, page: 1 }, replaceUrl)
       );
+
+    const sort$: Observable<HeroSort> = this.sortControl.valueChanges;
+
+    sort$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((sort) => this.changeConfig({sort, page: 1}, false));
 
     combineLatest([this.query$, this.totalPages$, this.mode$, this.status$])
       .pipe(
@@ -205,6 +214,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
     if (this.search.value !== config.search) {
       this.search.setValue(config.search, { emitEvent: false });
+    }
+
+    if (this.sortControl.value !== config.sort) {
+      this.sortControl.setValue(config.sort, { emitEvent: false });
     }
 
     this.heroService.applyConfig(config);

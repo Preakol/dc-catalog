@@ -1,12 +1,13 @@
 import { Params } from '@angular/router';
 import { ALIGNMENT_FILTERS, AlignmentFilter } from './hero.model';
-import { LIST_MODES, ListMode } from './hero.state';
+import { HeroSort, LIST_MODES, ListMode, SORT_OPTIONS } from './hero.state';
 
 export interface CatalogConfig {
   search: string;
   alignment: AlignmentFilter;
   mode: ListMode;
   page: number;
+  sort: HeroSort;
 }
 
 export const DEFAULT_CONFIG: CatalogConfig = {
@@ -14,6 +15,7 @@ export const DEFAULT_CONFIG: CatalogConfig = {
   alignment: 'all',
   mode: 'paged',
   page: 1,
+  sort: 'name-asc',
 };
 
 export function toQueryParams(config: CatalogConfig): Params {
@@ -32,6 +34,10 @@ export function toQueryParams(config: CatalogConfig): Params {
     params.mode = config.mode;
   }
 
+  if (config.sort !== DEFAULT_CONFIG.sort) {
+    params.sort = config.sort;
+  }
+
   if (config.mode === 'paged' && config.page !== DEFAULT_CONFIG.page) {
     params.page = String(config.page);
   }
@@ -45,6 +51,7 @@ export function fromQueryParams(params: Params): CatalogConfig {
     alignment: readAlignment(readText(params.alignment)),
     mode: readMode(readText(params.mode)),
     page: readPage(readText(params.page)),
+    sort: readSort(readText(params.sort)),
   };
 }
 
@@ -72,6 +79,10 @@ function readAlignment(value: string): AlignmentFilter {
 
 function readMode(value: string): ListMode {
   return LIST_MODES.find((option) => option.value === value)?.value ?? DEFAULT_CONFIG.mode;
+}
+
+function readSort(value: string): HeroSort {
+  return SORT_OPTIONS.find((option) => option.value === value)?.value ?? DEFAULT_CONFIG.sort;
 }
 
 function readPage(value: string): number {

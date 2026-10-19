@@ -23,6 +23,7 @@ import {
   initialState,
   totalPages,
   isAppend,
+  SORT_PARAMS,
 } from './hero.state';
 import { buildNewHero } from './hero.mapper';
 import { CatalogConfig } from './hero-url';
@@ -43,9 +44,13 @@ function externalUrl(externalId: number): string {
 }
 
 function toParams(query: HeroQuery): HttpParams {
+  const { sort, order } = SORT_PARAMS[query.sort];
+
   let params = new HttpParams()
     .set('_page', String(query.page))
-    .set('_limit', String(query.pageSize));
+    .set('_limit', String(query.pageSize))
+    .set('_sort', sort)
+    .set('_order', order);
 
   if (query.term.trim().length > 0) {
     params = params.set('search', query.term.trim());
@@ -124,6 +129,7 @@ export class HeroService {
     const queryChanged =
       query.term !== config.search ||
       query.alignment !== config.alignment ||
+      query.sort !== config.sort ||
       (config.mode === 'paged' && query.page !== config.page);
 
     if (modeChanged) {
@@ -131,7 +137,7 @@ export class HeroService {
     }
 
     if (modeChanged || queryChanged) {
-      this.patchQuery({ term: config.search, alignment: config.alignment, page });
+      this.patchQuery({ term: config.search, alignment: config.alignment, sort: config.sort, page });
     }
   }
 

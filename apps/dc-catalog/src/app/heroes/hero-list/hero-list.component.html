@@ -84,6 +84,12 @@
          class="min-w-[12rem] flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-100
                 ring-1 ring-slate-700 outline-none transition placeholder-slate-500 focus:ring-sky-500" />
 
+  <select [formControl]="sortControl"
+    class="rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+                 outline-none transition focus:ring-sky-500">
+    <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+  </select>
+
   <div class="flex gap-1 rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
     <button *ngFor="let a of alignmentFilters" type="button" (click)="onAlignment(a)"
             class="rounded-md px-3 py-1.5 text-xs font-medium capitalize transition"
