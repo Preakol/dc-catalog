@@ -35,7 +35,7 @@ import { toPurchaseState } from '../../cart/cart.utils';
 import { CompareButtonState } from '../../compare/compare.model';
 import { CompareService } from '../../compare/compare.service';
 import { toCompareButtonState } from '../../compare/compare.utils';
-import { CatalogConfig, DEFAULT_CONFIG, fromQueryParams, sameParams, toQueryParams } from '../hero-url';
+import { canReset, CatalogConfig, DEFAULT_CONFIG, fromQueryParams, resetConfig, sameParams, toQueryParams } from '../hero-url';
 
 const TYPING_DEBOUNCE_MS = 300;
 const TYPING_BURST_MS = 800;
@@ -131,6 +131,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
   readonly mode$ = this.heroService.mode$;
   readonly loadingMore$ = this.heroService.loadingMore$;
   readonly canLoadMore$ = this.heroService.canLoadMore$;
+
+  readonly canReset$: Observable<boolean> = this.route.queryParams.pipe(
+    map((params) => canReset(fromQueryParams(params)))
+  );
 
   readonly rows$: Observable<HeroRow[]> = combineLatest([
     this.heroes$,
@@ -278,6 +282,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   onDismissError(): void {
     this.heroService.clearError();
+  }
+
+  onReset(): void {
+    this.changeConfig(resetConfig(fromQueryParams(this.route.snapshot.queryParams)), false);
   }
 
   trackByRow(index: number, row: HeroRow): number {

@@ -133,6 +133,14 @@
 
     <p *ngIf="rangeError(stat) as error" class="px-1 text-xs text-rose-300">{{ error }}</p>
   </div>
+
+  <button type="button" (click)="onReset()" [disabled]="(canReset$ | async) === false"
+          class="rounded-lg px-3 py-1.5 text-sm text-slate-300 ring-1 ring-slate-700 transition
+                  hover:text-sky-400 hover:ring-sky-500/50
+                  disabled:text-slate-600 disabled:ring-slate-800 disabled:hover:text-slate-600
+                  disabled:hover:ring-slate-800">
+    Reset
+  </button>
 </div>
 
 <div *ngIf="showForm" class="mb-6">

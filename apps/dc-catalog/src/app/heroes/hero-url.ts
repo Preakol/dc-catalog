@@ -20,6 +20,14 @@ export const DEFAULT_CONFIG: CatalogConfig = {
   ranges: EMPTY_RANGES,
 };
 
+export function resetConfig(config: CatalogConfig): CatalogConfig {
+  return { ...DEFAULT_CONFIG, mode: config.mode };
+}
+
+export function canReset(config: CatalogConfig): boolean {
+  return !sameParams(toQueryParams(config), toQueryParams(resetConfig(config)));
+}
+
 export function toQueryParams(config: CatalogConfig): Params {
   const params: Params = {};
   const search = config.search.trim();
