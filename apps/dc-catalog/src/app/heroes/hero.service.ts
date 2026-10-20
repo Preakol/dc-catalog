@@ -91,7 +91,9 @@ export class HeroService {
   readonly discovering$: Observable<boolean> = this.state$.pipe(map((s) => s.discovering));
   readonly mode$: Observable<ListMode> = this.state$.pipe(map((s) => s.mode));
   readonly loadingMore$: Observable<boolean> = this.state$.pipe(map((s) => s.loadingMore));
-  readonly canLoadMore$: Observable<boolean> = this.state$.pipe(map((s) => s.mode === "infinite" && s.status === "loaded" && s.query.page < totalPages(s)))
+  readonly loadMoreError$: Observable<string | null> = this.state$.pipe(map((s) => s.loadMoreError));
+  readonly canLoadMore$: Observable<boolean> =
+    this.state$.pipe(map((s) => s.mode === "infinite" && s.status === "loaded" && s.loadMoreError === null && s.query.page < totalPages(s)));
 
   private readonly discoverAgain$ = new Subject<void>();
 
@@ -125,11 +127,12 @@ export class HeroService {
         tap(({query, append}) => this.patch({
           query,
           error: null,
-          ...(append ? {loadingMore: true} : {status: 'loading'})
+          loadMoreError: null,
+          ...(append ? {loadingMore: true} : {status: 'loading', loadingMore: false})
         })),
         switchMap(({query, append}) => this.fetchPage(query, append))
       )
-      .subscribe(); 
+      .subscribe();
   }
 
   applyConfig(config: CatalogConfig): void {
@@ -157,6 +160,10 @@ export class HeroService {
     const state = this.state$.value;
     const page = this.query$.value.page;
 
+    if (state.loadMoreError !== null) {
+      return;
+    }
+
     if (state.mode !== "infinite" || state.loadingMore || state.status === "loading") {
       return;
     }
@@ -166,6 +173,14 @@ export class HeroService {
     }
 
     this.patchQuery({page: page + 1})
+  }
+
+  retryLoadMore(): void {
+    if (this.state$.value.loadMoreError === null) {
+      return;
+    }
+
+    this.refresh$.next();
   }
 
   reload(): void {
@@ -262,8 +277,8 @@ export class HeroService {
         catchError(() => {
           this.patch(
             append
-            ? {loadingMore: false, error: 'Could not load more heroes'}
-            : { status: 'error', error: 'Could not load heroes.' }
+            ? {loadingMore: false, loadMoreError: 'Could not load more heroes.'}
+            : { status: 'error', loadingMore: false, error: 'Could not load heroes.' }
           );
           return of(null);
         })

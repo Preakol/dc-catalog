@@ -130,6 +130,7 @@ export class HeroListComponent implements OnInit, OnDestroy {
   readonly discoveredImported$ = this.heroService.discoveredImported$;
   readonly mode$ = this.heroService.mode$;
   readonly loadingMore$ = this.heroService.loadingMore$;
+  readonly loadMoreError$ = this.heroService.loadMoreError$;
   readonly canLoadMore$ = this.heroService.canLoadMore$;
 
   readonly canReset$: Observable<boolean> = this.route.queryParams.pipe(
@@ -253,6 +254,10 @@ export class HeroListComponent implements OnInit, OnDestroy {
 
   onRetry(): void {
     this.heroService.reload();
+  }
+
+  onRetryLoadMore(): void {
+    this.heroService.retryLoadMore();
   }
 
   onHeroSubmitted(value: HeroFormValue): void {

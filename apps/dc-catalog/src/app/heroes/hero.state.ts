@@ -77,6 +77,7 @@ export interface HeroesState {
   discovering: boolean;
   mode: ListMode;
   loadingMore: boolean;
+  loadMoreError: string | null;
 };
 
 export const initialQuery: HeroQuery = {
@@ -97,7 +98,8 @@ export const initialState: HeroesState = {
   importing: false,
   discovering: false,
   mode: 'paged',
-  loadingMore: false
+  loadingMore: false,
+  loadMoreError: null,
 };
 
 export function totalPages(state: HeroesState): number {
