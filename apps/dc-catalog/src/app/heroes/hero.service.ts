@@ -24,6 +24,7 @@ import {
   totalPages,
   isAppend,
   SORT_PARAMS,
+  sameRanges,
 } from './hero.state';
 import { buildNewHero } from './hero.mapper';
 import { CatalogConfig } from './hero-url';
@@ -51,6 +52,16 @@ function toParams(query: HeroQuery): HttpParams {
     .set('_limit', String(query.pageSize))
     .set('_sort', sort)
     .set('_order', order);
+
+  for (const [stat, {min, max}] of Object.entries(query.ranges)) {
+    if (min !== null) {
+      params = params.set(`powerstats.${stat}_gte`, String(min));
+    }
+
+    if (max !== null) {
+      params = params.set(`powerstats.${stat}_lte`, String(max));
+    }
+  }
 
   if (query.term.trim().length > 0) {
     params = params.set('search', query.term.trim());
@@ -130,6 +141,7 @@ export class HeroService {
       query.term !== config.search ||
       query.alignment !== config.alignment ||
       query.sort !== config.sort ||
+      !sameRanges(query.ranges, config.ranges) ||
       (config.mode === 'paged' && query.page !== config.page);
 
     if (modeChanged) {
@@ -137,7 +149,7 @@ export class HeroService {
     }
 
     if (modeChanged || queryChanged) {
-      this.patchQuery({ term: config.search, alignment: config.alignment, sort: config.sort, page });
+      this.patchQuery({ term: config.search, alignment: config.alignment, sort: config.sort, ranges: config.ranges, page });
     }
   }
 

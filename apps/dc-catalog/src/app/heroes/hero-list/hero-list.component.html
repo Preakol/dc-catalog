@@ -79,13 +79,13 @@
   </ng-template>
 </section>
 
-<div class="mb-6 flex flex-wrap items-center gap-3">
+<div class="mb-3 flex flex-wrap items-center gap-3">
   <input type="search" [formControl]="search" placeholder="Search..."
          class="min-w-[12rem] flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-100
                 ring-1 ring-slate-700 outline-none transition placeholder-slate-500 focus:ring-sky-500" />
 
   <select [formControl]="sortControl"
-    class="rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
+          class="rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700
                  outline-none transition focus:ring-sky-500">
     <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
   </select>
@@ -108,6 +108,31 @@
           [class.text-white]="!showForm">
     {{ showForm ? 'Cancel' : '+ New hero' }}
   </button>
+</div>
+
+<div [formGroup]="filters" class="mb-6 flex flex-wrap items-start gap-3">
+  <div *ngFor="let stat of rangeStats" [formGroupName]="stat" class="flex flex-col gap-1">
+    <div class="flex items-center gap-2 rounded-lg bg-slate-800 py-1.5 pl-3 pr-2 ring-1 transition
+                focus-within:ring-sky-500"
+         [class.ring-slate-700]="!rangeError(stat)"
+         [class.ring-rose-500]="rangeError(stat)">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-slate-500">{{ stat }}</span>
+
+      <input type="number" formControlName="min" min="0" max="100" placeholder="0"
+             [attr.aria-label]="stat + ' minimum'"
+             class="no-spinner w-12 bg-transparent text-center text-sm tabular-nums text-slate-100
+                    outline-none placeholder-slate-600" />
+
+      <span class="text-slate-600" aria-hidden="true">&ndash;</span>
+
+      <input type="number" formControlName="max" min="0" max="100" placeholder="100"
+             [attr.aria-label]="stat + ' maximum'"
+             class="no-spinner w-12 bg-transparent text-center text-sm tabular-nums text-slate-100
+                    outline-none placeholder-slate-600" />
+    </div>
+
+    <p *ngIf="rangeError(stat) as error" class="px-1 text-xs text-rose-300">{{ error }}</p>
+  </div>
 </div>
 
 <div *ngIf="showForm" class="mb-6">

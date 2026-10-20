@@ -6,6 +6,8 @@ export type ListMode = 'paged' | 'infinite';
 
 export type HeroSort = 'name-asc' | 'name-desc' | 'strength-desc' | 'intelligence-desc';
 
+export type RangeStat =  'strength' | 'intelligence';
+
 export interface ListModeOption {
   value: ListMode;
   label: string;
@@ -15,6 +17,11 @@ export interface SortOption {
   value: HeroSort;
   label: string;
 };
+
+export interface Range {
+  min: number | null;
+  max: number | null;
+}
 
 export const LIST_MODES: ListModeOption[] = [
   {value: 'paged', label: 'Pages'},
@@ -28,6 +35,8 @@ export const SORT_OPTIONS: SortOption[] = [
   {value: 'strength-desc', label: 'Strength - DESC'},
 ];
 
+export const RANGE_STATS: RangeStat[] = ['strength', 'intelligence'];
+
 interface SortParams {
   sort: string;
   order: string;
@@ -40,12 +49,22 @@ export const SORT_PARAMS: Record<HeroSort, SortParams> = {
   'strength-desc': {sort: 'powerstats.strength,name,id', order: 'desc,asc,asc'},
 };
 
+export type Ranges = Record<RangeStat, Range>;
+
+export const EMPTY_RANGE: Range = { min: null, max: null };
+
+export const EMPTY_RANGES: Ranges = {
+  strength: EMPTY_RANGE,
+  intelligence: EMPTY_RANGE,
+};
+
 export interface HeroQuery {
   term: string;
   alignment: AlignmentFilter;
   page: number;
   pageSize: number;
   sort: HeroSort;
+  ranges: Ranges;
 };
 
 export interface HeroesState {
@@ -66,6 +85,7 @@ export const initialQuery: HeroQuery = {
   page: 1,
   pageSize: 12,
   sort: 'name-asc',
+  ranges: EMPTY_RANGES,
 };
 
 export const initialState: HeroesState = {
@@ -86,4 +106,10 @@ export function totalPages(state: HeroesState): number {
 
 export function isAppend(mode: ListMode, page: number): boolean {
   return mode === "infinite" && page > 1;
+}
+
+export function sameRanges(a: Ranges, b: Ranges): boolean {
+  return RANGE_STATS.every(
+    (stat) => a[stat].min === b[stat].min && a[stat].max === b[stat].max
+  );
 }
