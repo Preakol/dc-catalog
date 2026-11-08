@@ -1,0 +1,66 @@
+name: CI and GitHub Pages
+
+on:
+  push:
+    branches: [main, modernize]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, test and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --watch=false
+      - run: npm run build
+
+  pages:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      # No backend on Pages: the catalogue runs from a static snapshot kept in localStorage,
+      # and checkout stays off because no Stripe key is set.
+      DATA_SOURCE: browser
+      STRIPE_PUBLISHABLE_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run seed -- --out public/data/heroes.json --force
+      - run: npm run build -- --base-href "/${{ github.event.repository.name }}/"
+      # Pages has no SPA fallback; serving index.html as 404.html makes deep links work.
+      - run: cp dist/dc-catalog/browser/index.html dist/dc-catalog/browser/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/dc-catalog/browser
+      - id: deploy
+        uses: actions/deploy-pages@v4
