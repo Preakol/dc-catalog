@@ -4,9 +4,11 @@ A searchable, filterable catalogue of DC Comics heroes built with Angular. It
 supports full CRUD, a cart with Stripe test-mode card tokenisation, and a
 side-by-side hero comparison.
 
-It started as an Angular 12 + Nx learning project. The `modernize` branch
-rebuilds it as a plain Angular CLI workspace with standalone components and
-signals.
+**Live demo:** https://preakol.github.io/dc-catalog/ (runs in demo mode with
+data stored in your browser; use **Reset demo data** to start over)
+
+It started as an Angular 12 + Nx learning project and was later rebuilt as a
+plain Angular CLI workspace with standalone components and signals.
 
 ## Features
 
