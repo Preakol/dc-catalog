@@ -1,146 +1,155 @@
 # DC Catalog
 
-A small Angular learning project: a searchable, filterable catalogue of DC Comics
-heroes with full CRUD against a local REST API.
+A searchable, filterable catalogue of DC Comics heroes built with Angular. It
+supports full CRUD, a cart with Stripe test-mode card tokenisation, and a
+side-by-side hero comparison.
 
-Built to practise Angular 12, Tailwind, RxJS and Nx.
-
-| | Version |
-| --- | --- |
-| Angular | 12.2 |
-| RxJS | 6.6 |
-| TypeScript | 4.3 |
-| Tailwind CSS | 3.2.4 |
-| Nx | 12.10 |
-| Node | 16 (see `.nvmrc`) |
-
-## Prerequisites
-
-**Node 16 is required.** Angular 12 uses a webpack version that relies on an MD4
-hash OpenSSL 3 removed, so the build fails on Node 17+ with
-`ERR_OSSL_EVP_UNSUPPORTED`.
-
-With [nvm](https://github.com/nvm-sh/nvm):
-
-```bash
-nvm install 16
-nvm use          # reads .nvmrc
-```
-
-## Setup
-
-One command — installs dependencies, generates `environment.ts` from `.env`,
-and creates `db.json`:
-
-```bash
-cp .env.example .env    # optional: defaults work without it
-npm run setup
-```
-
-### Environment variables
-
-Angular has no built-in `.env` support: the build is static and there is no
-`process.env` in the browser. So `tools/set-env.js` reads `.env` and generates
-`src/environments/environment.ts` before every `start` and `build`
-(via npm `prestart` / `prebuild` hooks).
-
-| Variable | Default | Used for |
-| --- | --- | --- |
-| `API_URL` | `http://localhost:3000` | the local json-server (all CRUD) |
-| `HEROES_API_URL` | `https://akabab.github.io/superhero-api/api` | the free external API (read-only) |
-| `STRIPE_PUBLISHABLE_KEY` | empty | Stripe **test** key (`pk_test_...`); checkout is disabled while empty |
-
-`.env` and the generated `environment*.ts` are gitignored; `.env.example` is
-committed. **Anything placed here ends up in the JavaScript bundle and is
-visible to any user — never put secrets in a frontend `.env`.**
-
-A Stripe *publishable* key is safe here: it can only tokenise a card, never
-move money. Get one at https://dashboard.stripe.com/test/apikeys. The
-*secret* key (`sk_test_...`) must never appear in this repository — charging
-a card requires a server, which this project does not have.
-
-`db.json` is the database for the mock API. It is seeded from the free
-[akabab superhero API](https://akabab.github.io/superhero-api/), filtered to the
-155 heroes published by DC Comics. It is generated rather than committed, so it
-will not exist until you run setup.
-
-## Running
-
-Two terminals, both from the project root.
-
-**Terminal 1 — the mock API** (http://localhost:3000):
-
-```bash
-npm run mock-api
-```
-
-To actually see the loading spinner and skeletons, start it with an artificial
-delay instead — the local API is otherwise too fast for the state to be visible:
-
-```bash
-npm run mock-api:slow    # 1200 ms delay on every response
-```
-
-**Terminal 2 — the app** (http://localhost:4200):
-
-```bash
-npm start
-```
-
-The app expects the API on port 3000. With no API running, the page shows an
-error state and a retry button.
-
-## Scripts
-
-| Command | Does |
-| --- | --- |
-| `npm run setup` | Install dependencies, generate env, create `db.json` if missing |
-| `npm run env` | Regenerate `environment.ts` from `.env` |
-| `npm start` | Dev server on http://localhost:4200 |
-| `npm run mock-api` | json-server on http://localhost:3000 |
-| `npm run mock-api:slow` | same, with a 1200 ms delay — makes the loading state visible |
-| `npm run seed:reset` | Overwrite `db.json` with fresh data (discards local changes) |
-| `npm run build` | Production build into `dist/` |
-| `npx nx lint dc-catalog` | Lint |
-| `npx nx test dc-catalog` | Unit tests |
-
-Writes made in the app are persisted by json-server straight into `db.json`, so
-they survive a restart. Use `npm run seed:reset` to get back to a clean dataset.
+It started as an Angular 12 + Nx learning project. The `modernize` branch
+rebuilds it as a plain Angular CLI workspace with standalone components and
+signals.
 
 ## Features
 
-- A random hero pulled from the external API on every page load, importable into the catalog with one click
-- List heroes with live search (debounced) and filtering by alignment
-- Create a hero via a validated reactive form
-- Edit a hero at `/heroes/:id/edit`, sharing the same form component
-- Delete a hero from its card
+- **Catalogue**: debounced search across names and biographies, filters by
+  alignment and by strength/intelligence ranges, four sort orders, and
+  paged or infinite-scroll mode. All of this lives in the URL, so every view
+  can be bookmarked and shared, and Back/Forward work as expected.
+- **Discover**: a random hero from the public
+  [superhero API](https://akabab.github.io/superhero-api/), which can be added
+  to the catalogue with one click.
+- **CRUD**: create a hero with a validated reactive form, edit it at
+  `/heroes/:id/edit` (same form component), delete it from its card.
+- **Detail page**: the stored hero next to its live data from the superhero
+  API, with differing power stats highlighted. Heroes created locally are
+  marked as such.
+- **Cart and checkout**: the price comes from the power stats. Checkout
+  tokenises a card with Stripe in test mode (see [Stripe](#stripe)), and paid
+  heroes appear under **My heroes**.
+- **Compare**: pick up to three heroes. The best value per stat is highlighted
+  and the comparison URL (`/compare?ids=1,2,3`) can be shared.
 
-## Structure
+Cart, orders and the compare selection are kept in `localStorage`.
+
+## Tech stack
+
+|            |                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| Angular    | 22: standalone components, signals, `input()`/`output()`, built-in control flow, zoneless |
+| TypeScript | 6, `strict` plus strict templates                                                         |
+| Styling    | Tailwind CSS 4                                                                            |
+| Tests      | Vitest via `ng test`                                                                      |
+| Lint       | ESLint with angular-eslint and typescript-eslint                                          |
+| Node       | 22.22.3 or newer (see `.nvmrc`)                                                           |
+
+## Getting started
+
+```bash
+nvm use            # Node 22, from .nvmrc
+npm run setup      # install, generate the environment, create db.json
+```
+
+Then, in two terminals:
+
+```bash
+npm run mock-api   # REST API on http://localhost:3000
+npm start          # app on http://localhost:4200
+```
+
+`npm run mock-api:slow` adds a 1200 ms delay to every response, so the loading
+states and skeletons can be seen.
+
+### Data sources
+
+The app reads and writes heroes through a `HeroApi` abstraction with two
+implementations:
+
+| `DATA_SOURCE`   | Implementation                      | Used for                                                                       |
+| --------------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| `api` (default) | `HttpHeroApi` → `tools/mock-api.ts` | local development; changes are saved to `db.json`                              |
+| `browser`       | `BrowserHeroApi` → `localStorage`   | GitHub Pages; seeded from a static snapshot, with a **Reset demo data** button |
+
+`tools/mock-api.ts` is a small Node HTTP server, run by Node directly with type
+stripping. Search, filters, sorting and paging live in one pure module,
+`src/app/heroes/hero-query.ts`, which both the mock API and `BrowserHeroApi`
+use, so the two data sources behave the same.
+
+`db.json` and the Pages snapshot are generated from the superhero API, filtered
+to the 155 DC Comics heroes, by `tools/seed-db.ts`. They are not committed.
+
+### Environment variables
+
+Angular has no runtime `process.env`, so `tools/set-env.ts` writes
+`src/environments/environment.ts` before `start`, `build` and `test`. Values
+come from the process environment first, then `.env`, then defaults.
+
+| Variable                 | Default                                      | Purpose                                                                     |
+| ------------------------ | -------------------------------------------- | --------------------------------------------------------------------------- |
+| `DATA_SOURCE`            | `api`                                        | `api` or `browser`, see above                                               |
+| `API_URL`                | `http://localhost:3000`                      | base URL of the mock API                                                    |
+| `HEROES_API_URL`         | `https://akabab.github.io/superhero-api/api` | the public superhero API (read-only)                                        |
+| `STRIPE_PUBLISHABLE_KEY` | empty                                        | Stripe **test** key (`pk_test_...`); checkout is disabled while it is empty |
+
+Everything in this file ends up in the JavaScript bundle and is visible to
+anyone, so never put secrets in it.
+
+### Stripe
+
+A publishable key can only tokenise a card; it cannot move money. Charging a
+card needs a server with the secret key, and this project has no server. So
+checkout stops after tokenisation and records the order locally. Use a test key
+from https://dashboard.stripe.com/test/apikeys and a
+[test card](https://docs.stripe.com/testing) such as `4242 4242 4242 4242`.
+
+## Scripts
+
+| Command                | Does                                                           |
+| ---------------------- | -------------------------------------------------------------- |
+| `npm run setup`        | install, generate the environment, create `db.json` if missing |
+| `npm start`            | dev server on http://localhost:4200                            |
+| `npm run mock-api`     | mock REST API on http://localhost:3000                         |
+| `npm run seed:reset`   | overwrite `db.json` with fresh data, discarding local changes  |
+| `npm test`             | unit and component tests (Vitest)                              |
+| `npm run lint`         | ESLint over `src/` and `tools/`                                |
+| `npm run typecheck`    | `tsc` for the app, the tests and the Node tools                |
+| `npm run format:check` | Prettier                                                       |
+| `npm run build`        | production build into `dist/dc-catalog/browser`                |
+
+## Project structure
 
 ```
-apps/dc-catalog/src/app/
-├── app.module.ts              registrations
-├── app-routing.module.ts      routes
-├── app.component.*            shell: header + <router-outlet>
-└── heroes/
-    ├── hero.model.ts          Hero types + pure helpers (filtering, form <-> hero)
-    ├── hero.service.ts        HTTP + state (BehaviorSubject)
-    ├── hero-list/             catalogue: search, filters, grid
-    ├── hero-card/             one hero; emits (deleted)
-    ├── hero-form/             reusable create/edit form; emits (submitted)
-    └── hero-edit/             reads :id from the route, feeds the form
+src/app/
+├── app.ts / app.html / app.routes.ts / app.config.ts   shell, routes, providers
+├── heroes/
+│   ├── hero-query.ts        search, filters, sorting, paging (shared with tools/mock-api.ts)
+│   ├── hero-guards.ts       runtime checks for stored and received hero records
+│   ├── hero.store.ts        catalogue state in signals
+│   ├── hero-url.ts          catalogue config <-> URL query params
+│   ├── data/                HeroApi and its HTTP / localStorage implementations
+│   └── hero-list/ hero-card/ hero-detail/ hero-edit/ hero-form/ pagination/
+├── cart/                    CartStore, Stripe PaymentService, cart drawer and pages
+└── compare/                 CompareStore, compare panel and page
+tools/                       set-env.ts, seed-db.ts, mock-api.ts
 ```
 
-Application state lives in `HeroService`: a private `BehaviorSubject<HeroesState>`
-exposed only as read-only observables, mutated only through service methods
-(`load`, `create`, `update`, `remove`). This mirrors the shape of an NgRx store
-so it can be migrated later.
+State lives in root-provided stores (`HeroStore`, `CartStore`,
+`CompareStore`). Each one holds a private `signal` and exposes read-only
+`computed` selectors, and state changes only through store methods.
+Components are `OnPush` and read signals directly.
 
-## Notes
+## Tests
 
-- `.npmrc` sets `legacy-peer-deps=true`. Angular 12's build tooling declares a
-  peer range of `tailwindcss@^2`, which predates Tailwind 3; the integration
-  itself works fine, and Angular 13 later widened that range.
-- `npm audit` reports vulnerabilities in the build-time toolchain. They come with
-  pinning a five-year-old Angular. Do **not** run `npm audit fix --force` — it
-  upgrades Angular past 12 and breaks the workspace.
+`npm test` runs Vitest through the Angular CLI. The tests cover:
+
+- the query module, the URL mapping and the record guards;
+- `BrowserHeroApi` against a mocked HTTP backend and `localStorage`;
+- the stores: loading, infinite scrolling, error states, checkout and the
+  compare limit;
+- every page rendered through the router with an in-memory `HeroApi`.
+
+## Deployment
+
+`.github/workflows/ci.yml` runs format check, lint, typecheck, tests and a
+build on every push and pull request. On `main` it then builds the
+`browser` data-source variant and deploys it to GitHub Pages.
+
+To deploy from a fork, set **Settings → Pages → Source** to **GitHub Actions**.
