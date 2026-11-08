@@ -1,0 +1,324 @@
+@if (error(); as error) {
+  <div
+    class="mb-4 flex items-center gap-3 rounded-lg bg-rose-500/10 px-4 py-3 ring-1 ring-rose-500/30"
+  >
+    <span class="flex-1 text-sm text-rose-200">{{ error }}</span>
+    <button
+      type="button"
+      (click)="onDismissError()"
+      class="rounded-sm px-2 py-1 text-xs text-rose-300 transition hover:bg-rose-500/20"
+    >
+      Dismiss
+    </button>
+  </div>
+}
+
+<section
+  class="mb-6 flex items-center gap-4 rounded-xl bg-linear-to-r from-slate-800/80 to-slate-800/30 p-4 ring-1 ring-slate-700"
+>
+  @if (discovered(); as discovered) {
+    <img
+      [src]="discovered.images.sm"
+      [alt]="discovered.name"
+      loading="lazy"
+      class="h-20 w-20 shrink-0 rounded-lg object-cover ring-1 ring-slate-600"
+    />
+    <div class="min-w-0 flex-1">
+      <p class="text-[11px] font-medium uppercase tracking-wider text-sky-400">
+        From the multiverse &middot; superhero-api
+      </p>
+      <h2 class="truncate text-lg font-semibold text-slate-100">{{ discovered.name }}</h2>
+      <p class="truncate text-xs text-slate-400">
+        {{ discovered.biography.publisher || 'Unknown publisher' }}
+      </p>
+    </div>
+    <div class="flex shrink-0 items-center gap-2">
+      @if (discoveredImported()) {
+        <span
+          class="rounded-lg bg-emerald-500/15 px-3 py-2 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/40"
+        >
+          &check; In catalog
+        </span>
+      } @else {
+        <button
+          type="button"
+          (click)="onImportDiscovered(discovered)"
+          [disabled]="importing()"
+          class="flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-wait disabled:bg-sky-700 disabled:text-sky-200"
+        >
+          @if (importing()) {
+            <span
+              class="h-3 w-3 animate-spin rounded-full border-2 border-sky-300/40 border-t-white"
+            ></span>
+          }
+          {{ importing() ? 'Adding...' : 'Add to catalog' }}
+        </button>
+      }
+      <button
+        type="button"
+        (click)="onDiscoverAnother()"
+        [disabled]="discovering()"
+        title="Show another hero"
+        aria-label="Show another hero"
+        class="rounded-lg p-2 text-slate-400 ring-1 ring-slate-700 transition hover:text-sky-400 hover:ring-sky-500/50 disabled:cursor-wait disabled:text-slate-600"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          [class.animate-spin]="discovering()"
+        >
+          <path d="M21 12a9 9 0 1 1-3.5-7.1" />
+          <path d="M21 3v6h-6" />
+        </svg>
+      </button>
+    </div>
+  } @else {
+    <div
+      class="h-20 w-20 shrink-0 rounded-lg bg-slate-800 ring-1 ring-slate-700"
+      [class.animate-pulse]="discovering()"
+    ></div>
+    <div class="min-w-0 flex-1">
+      <p class="text-[11px] font-medium uppercase tracking-wider text-sky-400">
+        From the multiverse &middot; superhero-api
+      </p>
+      <p class="text-sm text-slate-400">
+        {{ discovering() ? 'Looking for a hero...' : 'Could not reach the external API.' }}
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="onDiscoverAnother()"
+      [disabled]="discovering()"
+      class="shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 ring-1 ring-slate-700 transition hover:text-sky-400 hover:ring-sky-500/50 disabled:cursor-wait disabled:text-slate-600"
+    >
+      Try again
+    </button>
+  }
+</section>
+
+<div class="mb-3 flex flex-wrap items-center gap-3">
+  <input
+    type="search"
+    [formControl]="search"
+    placeholder="Search..."
+    class="min-w-[12rem] flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-100 ring-1 ring-slate-700 outline-hidden transition placeholder:text-slate-500 focus:ring-sky-500"
+  />
+
+  <select
+    [formControl]="sortControl"
+    class="rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 outline-hidden transition focus:ring-sky-500"
+  >
+    @for (option of sortOptions; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+
+  <div class="flex gap-1 rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
+    @for (a of alignmentFilters; track a) {
+      <button
+        type="button"
+        (click)="onAlignment(a)"
+        class="rounded-md px-3 py-1.5 text-xs font-medium capitalize transition"
+        [class.bg-sky-600]="query().alignment === a"
+        [class.text-white]="query().alignment === a"
+        [class.text-slate-400]="query().alignment !== a"
+      >
+        {{ a }}
+      </button>
+    }
+  </div>
+
+  <button
+    type="button"
+    (click)="showForm.set(!showForm())"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [class.bg-slate-700]="showForm()"
+    [class.text-slate-200]="showForm()"
+    [class.bg-sky-600]="!showForm()"
+    [class.text-white]="!showForm()"
+  >
+    {{ showForm() ? 'Cancel' : '+ New hero' }}
+  </button>
+</div>
+
+<div [formGroup]="filters" class="mb-6 flex flex-wrap items-start gap-3">
+  @for (stat of rangeStats; track stat) {
+    <div [formGroupName]="stat" class="flex flex-col gap-1">
+      <div
+        class="flex items-center gap-2 rounded-lg bg-slate-800 py-1.5 pl-3 pr-2 ring-1 transition focus-within:ring-sky-500"
+        [class.ring-slate-700]="!rangeError(stat)"
+        [class.ring-rose-500]="rangeError(stat)"
+      >
+        <span class="text-[11px] font-medium uppercase tracking-wider text-slate-500">{{
+          stat
+        }}</span>
+        <input
+          type="number"
+          formControlName="min"
+          min="0"
+          max="100"
+          placeholder="0"
+          [attr.aria-label]="stat + ' minimum'"
+          class="no-spinner w-12 bg-transparent text-center text-sm tabular-nums text-slate-100 outline-hidden placeholder:text-slate-600"
+        />
+        <span class="text-slate-600" aria-hidden="true">&ndash;</span>
+        <input
+          type="number"
+          formControlName="max"
+          min="0"
+          max="100"
+          placeholder="100"
+          [attr.aria-label]="stat + ' maximum'"
+          class="no-spinner w-12 bg-transparent text-center text-sm tabular-nums text-slate-100 outline-hidden placeholder:text-slate-600"
+        />
+      </div>
+      @if (rangeError(stat); as error) {
+        <p class="px-1 text-xs text-rose-300">{{ error }}</p>
+      }
+    </div>
+  }
+
+  <button
+    type="button"
+    (click)="onReset()"
+    [disabled]="canReset() === false"
+    class="rounded-lg px-3 py-1.5 text-sm text-slate-300 ring-1 ring-slate-700 transition hover:text-sky-400 hover:ring-sky-500/50 disabled:text-slate-600 disabled:ring-slate-800 disabled:hover:text-slate-600 disabled:hover:ring-slate-800"
+  >
+    Reset
+  </button>
+</div>
+
+@if (showForm()) {
+  <div class="mb-6">
+    <dc-hero-form (submitted)="onHeroSubmitted($event)" submitLabel="Create hero"></dc-hero-form>
+  </div>
+}
+
+@if (mode(); as mode) {
+  <div class="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+    <span class="tabular-nums text-slate-300">{{ total() }}</span>
+    <span>{{ canReset() ? 'matching' : 'in catalog' }}</span>
+    <div class="ml-auto flex gap-1 rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
+      @for (option of listModes; track option.value) {
+        <button
+          type="button"
+          (click)="onMode(option.value)"
+          class="rounded-md px-3 py-1 text-xs font-medium transition"
+          [class.bg-sky-600]="mode === option.value"
+          [class.text-white]="mode === option.value"
+          [class.text-slate-400]="mode !== option.value"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+}
+
+@switch (status()) {
+  @case ('loading') {
+    <div class="mb-4 flex items-center gap-3 text-sm text-slate-400">
+      <span
+        class="h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-sky-400"
+        role="status"
+        aria-label="Loading"
+      ></span>
+      <span>Loading catalog...</span>
+    </div>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4" aria-hidden="true">
+      @for (i of skeletons; track i) {
+        <div class="h-80 animate-pulse rounded-xl bg-slate-800/60 ring-1 ring-slate-700"></div>
+      }
+    </div>
+  }
+  @case ('error') {
+    <div class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+      <p class="text-slate-300">The catalog failed to load.</p>
+      <p class="mt-1 text-sm text-slate-500">
+        @if (browserData) {
+          The demo data could not be loaded. Check your connection and retry.
+        } @else {
+          Check that <code>npm run mock-api</code> is running.
+        }
+      </p>
+      <button
+        type="button"
+        (click)="onRetry()"
+        class="mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-500"
+      >
+        Retry
+      </button>
+    </div>
+  }
+  @case ('loaded') {
+    @if (rows(); as rows) {
+      @if (rows.length === 0) {
+        <div class="rounded-xl bg-slate-800/60 p-10 text-center ring-1 ring-slate-700">
+          <p class="text-slate-300">Nothing found.</p>
+          <p class="mt-1 text-sm text-slate-500">Try a different search term or filter.</p>
+        </div>
+      }
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+        @for (row of rows; track row.hero.id) {
+          <dc-hero-card
+            [hero]="row.hero"
+            [purchase]="row.purchase"
+            [compare]="row.compare"
+            (compareToggled)="onCompareToggled($event)"
+            (buy)="onHeroBuy($event)"
+            (deleted)="onHeroDeleted($event)"
+          ></dc-hero-card>
+        }
+      </div>
+      @if (loadMoreError(); as error) {
+        <div
+          class="mt-8 flex flex-wrap items-center justify-center gap-3 rounded-lg bg-rose-500/10 px-4 py-3 ring-1 ring-rose-500/30"
+        >
+          <span class="text-sm text-rose-200">{{ error }}</span>
+          <button
+            type="button"
+            (click)="onRetryLoadMore()"
+            class="rounded-lg px-3 py-1.5 text-sm font-medium text-rose-200 ring-1 ring-rose-500/40 transition hover:bg-rose-500/20 hover:text-rose-100"
+          >
+            Retry
+          </button>
+        </div>
+      }
+      @if (canLoadMore()) {
+        <div
+          dcInView
+          (dcInView)="onLoadMore()"
+          class="mt-8 flex h-16 items-center justify-center text-sm text-slate-500"
+        >
+          @if (loadingMore()) {
+            <span class="flex items-center gap-2">
+              <span
+                class="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-sky-400"
+              ></span>
+              Loading more...
+            </span>
+          }
+        </div>
+      }
+      @if (pagination(); as pagination) {
+        @if (pagination.mode === 'paged' && pagination.totalPages > 1) {
+          <dc-pagination
+            class="mt-8 block"
+            [page]="pagination.page"
+            [totalPages]="pagination.totalPages"
+            (goTo)="onPage($event)"
+          >
+          </dc-pagination>
+        }
+        @if (pagination.mode === 'infinite' && pagination.page >= pagination.totalPages) {
+          <p class="mt-8 text-center text-sm text-slate-600">That's everything.</p>
+        }
+      }
+    }
+  }
+}

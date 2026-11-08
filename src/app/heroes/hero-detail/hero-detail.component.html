@@ -1,0 +1,211 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/" class="mb-4 inline-block text-sm text-slate-400 transition hover:text-sky-400">
+    &larr; Back to catalog
+  </a>
+
+  @if (status() === 'loading') {
+    <div class="animate-pulse rounded-xl bg-slate-800/60 p-8 ring-1 ring-slate-700">
+      <div class="h-6 w-48 rounded-sm bg-slate-700"></div>
+      <div class="mt-4 h-64 rounded-sm bg-slate-700/60"></div>
+    </div>
+  }
+
+  @if (status() === 'missing') {
+    <div class="rounded-xl bg-slate-800/60 p-8 text-center ring-1 ring-slate-700">
+      <p class="text-slate-300">Hero not found.</p>
+      <p class="mt-1 text-sm text-slate-500">It may have been deleted, or the link is wrong.</p>
+    </div>
+  }
+
+  @if (ready(); as ready) {
+    <article class="grid items-start gap-6 md:grid-cols-[minmax(0,20rem)_1fr]">
+      <div class="overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700">
+        <img [src]="imageOf(ready)" [alt]="ready.hero.name" class="w-full object-cover" />
+      </div>
+      <div class="flex flex-col gap-5">
+        <header>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-2xl font-semibold text-slate-100">{{ ready.hero.name }}</h2>
+            @if (ready.source === 'local-only') {
+              <span
+                class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300 ring-1 ring-amber-500/40"
+              >
+                Created here
+              </span>
+            }
+            @if (ready.source === 'enriched') {
+              <span
+                class="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-300 ring-1 ring-sky-500/40"
+              >
+                Live from superhero API
+              </span>
+            }
+            @if (ready.source === 'external-unavailable') {
+              <span
+                class="rounded-full bg-slate-600/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300 ring-1 ring-slate-500/40"
+              >
+                Source unreachable
+              </span>
+            }
+          </div>
+          @if (ready.hero.biography.fullName) {
+            <p class="mt-1 text-sm text-slate-400">
+              {{ ready.hero.biography.fullName }}
+            </p>
+          }
+          @if (ready.source === 'local-only') {
+            <p class="mt-2 text-xs text-slate-500">
+              This hero exists only in our catalog, so there is nothing to compare against.
+            </p>
+          }
+          @if (ready.source === 'external-unavailable') {
+            <p class="mt-2 text-xs text-slate-500">
+              The superhero API did not answer. Showing our stored copy.
+            </p>
+          }
+        </header>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+            <dt class="text-[11px] uppercase tracking-wide text-slate-500">Biography</dt>
+            <dd class="mt-2 text-slate-300">
+              Publisher: {{ ready.hero.biography.publisher || 'Unknown' }}
+            </dd>
+            <dd class="text-slate-300">Alignment: {{ ready.hero.biography.alignment }}</dd>
+            <dd class="text-slate-300">Born: {{ textOf(ready.hero.biography.placeOfBirth) }}</dd>
+            <dd class="text-slate-300">
+              First seen: {{ textOf(ready.hero.biography.firstAppearance) }}
+            </dd>
+            <dd class="text-slate-300">Aliases: {{ aliasesFor(ready.hero) }}</dd>
+            <dd class="text-slate-300">Alter egos: {{ alterEgosFor(ready.hero) }}</dd>
+          </dl>
+          <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+            <dt class="text-[11px] uppercase tracking-wide text-slate-500">Appearance</dt>
+            <dd class="mt-2 text-slate-300">Race: {{ textOf(ready.hero.appearance.race) }}</dd>
+            <dd class="text-slate-300">Gender: {{ textOf(ready.hero.appearance.gender) }}</dd>
+            <dd class="text-slate-300">Eyes: {{ textOf(ready.hero.appearance.eyeColor) }}</dd>
+            <dd class="text-slate-300">Hair: {{ textOf(ready.hero.appearance.hairColor) }}</dd>
+            <dd class="text-slate-300">
+              Height: {{ ready.hero.appearance.height.join(' / ') || 'Unknown' }}
+            </dd>
+            <dd class="text-slate-300">
+              Weight: {{ ready.hero.appearance.weight.join(' / ') || 'Unknown' }}
+            </dd>
+          </dl>
+          <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+            <dt class="text-[11px] uppercase tracking-wide text-slate-500">Work</dt>
+            <dd class="mt-2 text-slate-300">
+              {{ textOf(ready.hero.work.occupation, 'Unknown occupation') }}
+            </dd>
+            <dd class="text-slate-300">Base: {{ textOf(ready.hero.work.base) }}</dd>
+          </dl>
+          <dl class="rounded-xl bg-slate-800/60 p-4 text-sm ring-1 ring-slate-700">
+            <dt class="text-[11px] uppercase tracking-wide text-slate-500">Connections</dt>
+            <dd class="mt-2 text-slate-300">
+              {{ textOf(ready.hero.connections.groupAffiliation, 'None known') }}
+            </dd>
+            <dd class="text-slate-300">
+              {{ textOf(ready.hero.connections.relatives, 'No relatives listed') }}
+            </dd>
+          </dl>
+        </div>
+        <div class="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700">
+          <h3 class="text-[11px] uppercase tracking-wide text-slate-500">Power stats</h3>
+          @if (ready.external === null) {
+            <div class="mt-3 flex flex-col gap-2">
+              @for (stat of statsOf(ready.hero); track stat.label) {
+                <div class="flex items-center gap-3">
+                  <span class="w-10 font-mono text-[11px] text-slate-500">{{ stat.label }}</span>
+                  <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-700/70">
+                    <div
+                      class="h-full rounded-full bg-linear-to-r from-sky-500 to-cyan-400"
+                      [style.width.%]="stat.value"
+                    ></div>
+                  </div>
+                  <span class="w-8 text-right font-mono text-[11px] tabular-nums text-slate-400">{{
+                    stat.value
+                  }}</span>
+                </div>
+              }
+            </div>
+          }
+          @if (ready.external; as external) {
+            <div class="mt-3 flex flex-col gap-2">
+              <p class="text-xs text-slate-500">Our catalog vs. the source of truth.</p>
+              @for (stat of comparisonOf(ready.hero, external); track stat.label) {
+                <div class="flex items-center gap-3">
+                  <span class="w-10 font-mono text-[11px] text-slate-500">{{ stat.label }}</span>
+                  <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-700/70">
+                    <div
+                      class="h-full rounded-full bg-linear-to-r from-sky-500 to-cyan-400"
+                      [style.width.%]="stat.value"
+                    ></div>
+                  </div>
+                  <span class="w-8 text-right font-mono text-[11px] tabular-nums text-slate-300">{{
+                    stat.value
+                  }}</span>
+                  <span
+                    class="w-14 text-right font-mono text-[11px] tabular-nums"
+                    [class.text-slate-500]="stat.value === stat.canon"
+                    [class.text-amber-400]="stat.value !== stat.canon"
+                  >
+                    {{ stat.canon }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="font-mono text-2xl tabular-nums text-slate-100">
+            {{ priceFor(ready.hero) | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </span>
+          @switch (purchase()) {
+            @case ('buy') {
+              <button
+                type="button"
+                (click)="onBuy(ready.hero)"
+                class="rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-sky-500"
+              >
+                Buy
+              </button>
+            }
+            @case ('in-cart') {
+              <a
+                routerLink="/cart"
+                class="rounded-lg bg-slate-700 px-5 py-2.5 text-sm font-medium text-sky-300 ring-1 ring-sky-500/40 transition hover:bg-slate-600"
+              >
+                In cart &rarr; checkout
+              </a>
+            }
+            @case ('owned') {
+              <span
+                class="rounded-lg bg-emerald-500/15 px-5 py-2.5 text-sm font-medium text-emerald-300 ring-1 ring-emerald-500/40"
+              >
+                &check; Owned
+              </span>
+            }
+          }
+          <button
+            type="button"
+            (click)="onCompare(ready.hero)"
+            [disabled]="compare() === 'full'"
+            [ngClass]="{
+              'bg-slate-700 text-slate-100 hover:bg-slate-600': compare() === 'add',
+              'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/40': compare() === 'selected',
+              'bg-slate-800 text-slate-600 cursor-not-allowed': compare() === 'full',
+            }"
+            class="rounded-lg px-4 py-2.5 text-sm font-medium transition"
+          >
+            {{ compare() === 'selected' ? '✓ In compare' : 'Compare' }}
+          </button>
+          <a
+            [routerLink]="['/heroes', ready.hero.id, 'edit']"
+            class="ml-auto rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+          >
+            Edit
+          </a>
+        </div>
+      </div>
+    </article>
+  }
+</section>

@@ -1,135 +1,78 @@
 {
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "schematicCollections": ["angular-eslint"]
+  },
+  "newProjectRoot": "projects",
   "projects": {
     "dc-catalog": {
       "projectType": "application",
-      "root": "apps/dc-catalog",
-      "sourceRoot": "apps/dc-catalog/src",
+      "schematics": {},
+      "root": "",
+      "sourceRoot": "src",
       "prefix": "dc",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "outputs": [
-            "{options.outputPath}"
-          ],
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/apps/dc-catalog",
-            "index": "apps/dc-catalog/src/index.html",
-            "main": "apps/dc-catalog/src/main.ts",
-            "polyfills": "apps/dc-catalog/src/polyfills.ts",
-            "tsConfig": "apps/dc-catalog/tsconfig.app.json",
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
             "assets": [
-              "apps/dc-catalog/src/favicon.ico",
-              "apps/dc-catalog/src/assets"
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
             ],
-            "styles": [
-              "apps/dc-catalog/src/styles.css"
-            ],
-            "scripts": []
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "apps/dc-catalog/src/environments/environment.ts",
-                  "with": "apps/dc-catalog/src/environments/environment.prod.ts"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "outputHashing": "all"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "dc-catalog:build:production"
+              "buildTarget": "dc-catalog:build:production"
             },
             "development": {
-              "browserTarget": "dc-catalog:build:development"
+              "buildTarget": "dc-catalog:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "dc-catalog:build"
-          }
+        "test": {
+          "builder": "@angular/build:unit-test"
         },
         "lint": {
-          "builder": "@nrwl/linter:eslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "apps/dc-catalog/src/**/*.ts",
-              "apps/dc-catalog/src/**/*.html"
-            ]
-          }
-        },
-        "test": {
-          "builder": "@nrwl/jest:jest",
-          "outputs": [
-            "coverage/apps/dc-catalog"
-          ],
-          "options": {
-            "jestConfig": "apps/dc-catalog/jest.config.js",
-            "passWithNoTests": true
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html", "tools/**/*.ts"]
           }
         }
       }
     }
-  },
-  "cli": {
-    "defaultCollection": "@nrwl/angular",
-    "packageManager": "npm"
-  },
-  "schematics": {
-    "@nrwl/angular": {
-      "application": {
-        "linter": "eslint"
-      },
-      "library": {
-        "linter": "eslint"
-      },
-      "storybook-configuration": {
-        "linter": "eslint"
-      }
-    },
-    "@nrwl/angular:application": {
-      "style": "css",
-      "linter": "eslint",
-      "unitTestRunner": "jest",
-      "e2eTestRunner": "cypress"
-    },
-    "@nrwl/angular:library": {
-      "style": "css",
-      "linter": "eslint",
-      "unitTestRunner": "jest"
-    },
-    "@nrwl/angular:component": {
-      "style": "css"
-    }
-  },
-  "defaultProject": "dc-catalog"
+  }
 }

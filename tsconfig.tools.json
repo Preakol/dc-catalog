@@ -1,0 +1,12 @@
+/* Type-checks the Node scripts in tools/, which Node runs directly by stripping types. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "types": ["node"]
+  },
+  "include": ["tools/**/*.ts"]
+}

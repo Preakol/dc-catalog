@@ -1,0 +1,119 @@
+<article
+  class="group flex h-full flex-col overflow-hidden rounded-xl bg-slate-800/80 ring-1 ring-slate-700 transition hover:ring-sky-500/60 hover:shadow-lg hover:shadow-sky-500/10"
+>
+  <a
+    [routerLink]="['/heroes', hero().id]"
+    class="relative block aspect-[3/4] overflow-hidden bg-slate-900"
+  >
+    <img
+      [src]="imageUrl()"
+      [alt]="hero().name"
+      loading="lazy"
+      class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+    />
+
+    <span
+      class="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 backdrop-blur-sm"
+      [ngClass]="alignmentClass()"
+    >
+      {{ alignment() }}
+    </span>
+  </a>
+
+  <div class="flex flex-1 flex-col gap-3 p-4">
+    <header>
+      <a
+        [routerLink]="['/heroes', hero().id]"
+        [title]="hero().name"
+        class="block truncate text-base font-semibold text-slate-100 transition hover:text-sky-400"
+      >
+        {{ hero().name }}
+      </a>
+      <p class="min-h-[1rem] truncate text-xs text-slate-400" [title]="fullName()">
+        {{ fullName() }}
+      </p>
+      <p class="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{{ race() }}</p>
+    </header>
+
+    <div class="flex flex-col gap-1.5">
+      @for (stat of stats(); track stat.label) {
+        <div class="flex items-center gap-2">
+          <span class="w-9 font-mono text-[10px] tracking-wider text-slate-500">{{
+            stat.label
+          }}</span>
+          <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-700/70">
+            <div
+              class="h-full rounded-full bg-linear-to-r from-sky-500 to-cyan-400"
+              [style.width.%]="stat.value"
+            ></div>
+          </div>
+          <span class="w-6 text-right font-mono text-[10px] tabular-nums text-slate-400">{{
+            stat.value
+          }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="mt-auto flex items-center justify-between gap-2 pt-1">
+      <span class="font-mono text-sm tabular-nums text-slate-200">
+        {{ price() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+      </span>
+      @switch (purchase()) {
+        @case ('buy') {
+          <button
+            type="button"
+            (click)="buy.emit(hero())"
+            class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sky-500"
+          >
+            Buy
+          </button>
+        }
+        @case ('in-cart') {
+          <a
+            routerLink="/cart"
+            class="rounded-lg px-3 py-1.5 text-xs font-medium text-sky-300 ring-1 ring-sky-500/40 transition hover:bg-sky-500/10"
+          >
+            In cart
+          </a>
+        }
+        @case ('owned') {
+          <span
+            class="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/40"
+          >
+            &check; Owned
+          </span>
+        }
+      }
+    </div>
+
+    <button
+      type="button"
+      (click)="compareToggled.emit(hero())"
+      [disabled]="compare() === 'full'"
+      [ngClass]="{
+        'bg-slate-700 text-slate-100 hover:bg-slate-600': compare() === 'add',
+        'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/40': compare() === 'selected',
+        'bg-slate-800 text-slate-600 cursor-not-allowed': compare() === 'full',
+      }"
+      class="w-full rounded-lg px-3 py-1.5 text-xs font-medium transition"
+    >
+      {{ compare() === 'selected' ? '✓ In compare' : 'Compare' }}
+    </button>
+
+    <div class="flex gap-2">
+      <a
+        [routerLink]="['/heroes', hero().id, 'edit']"
+        class="flex-1 rounded-lg bg-slate-700 px-3 py-1.5 text-center text-xs font-medium text-slate-100 transition hover:bg-slate-600"
+      >
+        Edit
+      </a>
+      <button
+        type="button"
+        (click)="deleted.emit(hero().id)"
+        class="rounded-lg px-3 py-1.5 text-xs font-medium text-rose-300 ring-1 ring-rose-500/40 transition hover:bg-rose-500/20"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</article>
